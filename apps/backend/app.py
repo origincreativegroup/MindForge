@@ -11,9 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from .middleware import AssetAccessMiddleware
 
-# Fix: Use absolute imports instead of relative imports
+# Include optional workforce router if available
 try:
-    from routers import workforce
+    from .routers import workforce
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")

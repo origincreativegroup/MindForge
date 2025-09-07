@@ -1,8 +1,9 @@
 """Queries for the skill matrix and growth ledger."""
 
 from typing import Dict, List
-from sqlalchemy.orm import Session
+
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from .models import Skill, SkillEvidence
 
