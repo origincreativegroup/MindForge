@@ -1,7 +1,7 @@
 """Database session handling for the backend app."""
 
 from .database import engine, SessionLocal, init_db
-from .models import Base
+from .services.models import Base
 
 # Initialize tables on startup
 init_db(Base)
