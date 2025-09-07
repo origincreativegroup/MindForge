@@ -1,11 +1,13 @@
-from datetime import datetime, date
-from typing import Dict, List, Optional
+from datetime import date, datetime
 from enum import Enum
+
 from pydantic import BaseModel
+
 
 # Conversation schemas
 class ConversationCreate(BaseModel):
-    title: Optional[str] = None
+    title: str | None = None
+
 
 class ConversationOut(BaseModel):
     id: int
@@ -15,47 +17,52 @@ class ConversationOut(BaseModel):
     class Config:
         orm_mode = True
 
+
 # Message schemas
 class MessageCreate(BaseModel):
     role: str
     content: str
-    emotion: Optional[str] = None
+    emotion: str | None = None
+
 
 class MessageOut(BaseModel):
     id: int
     conversation_id: int
     role: str
     content: str
-    emotion: Optional[str] = None
+    emotion: str | None = None
     created_at: datetime
 
     class Config:
         orm_mode = True
 
+
 # Process map schemas
 class ProcessMapCreate(BaseModel):
-    steps: List[str] = []
-    actors: List[str] = []
-    tools: List[str] = []
-    decisions: List[str] = []
-    inputs: List[str] = []
-    outputs: List[str] = []
-    raw_chunks: List[str] = []
+    steps: list[str] = []
+    actors: list[str] = []
+    tools: list[str] = []
+    decisions: list[str] = []
+    inputs: list[str] = []
+    outputs: list[str] = []
+    raw_chunks: list[str] = []
+
 
 class ProcessMapOut(BaseModel):
     id: int
     conversation_id: int
-    steps: List[str]
-    actors: List[str]
-    tools: List[str]
-    decisions: List[str]
-    inputs: List[str]
-    outputs: List[str]
-    raw_chunks: List[str]
+    steps: list[str]
+    actors: list[str]
+    tools: list[str]
+    decisions: list[str]
+    inputs: list[str]
+    outputs: list[str]
+    raw_chunks: list[str]
     created_at: datetime
 
     class Config:
         orm_mode = True
+
 
 # Chat interaction schemas
 class ChatTurn(BaseModel):
@@ -91,7 +98,7 @@ class AssetVisibility(str, Enum):
 
 class ClientCreate(BaseModel):
     name: str
-    contact_info: Optional[str] = None
+    contact_info: str | None = None
 
 
 class ClientOut(ClientCreate):
@@ -103,17 +110,17 @@ class ClientOut(ClientCreate):
 
 class ProjectCreate(BaseModel):
     title: str
-    short_tagline: Optional[str] = None
+    short_tagline: str | None = None
     status: ProjectStatus = ProjectStatus.pitch
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    client_id: Optional[int] = None
-    disciplines: List[str] = []
-    skill_ids: List[int] = []
-    primary_tool_ids: List[int] = []
-    tag_ids: List[int] = []
-    collection_ids: List[int] = []
-    hero_asset_id: Optional[int] = None
+    start_date: date | None = None
+    end_date: date | None = None
+    client_id: int | None = None
+    disciplines: list[str] = []
+    skill_ids: list[int] = []
+    primary_tool_ids: list[int] = []
+    tag_ids: list[int] = []
+    collection_ids: list[int] = []
+    hero_asset_id: int | None = None
 
 
 class ProjectOut(ProjectCreate):
@@ -126,7 +133,7 @@ class ProjectOut(ProjectCreate):
 class RoleCreate(BaseModel):
     project_id: int
     name: str
-    person: Optional[str] = None
+    person: str | None = None
 
 
 class RoleOut(RoleCreate):
@@ -139,8 +146,8 @@ class RoleOut(RoleCreate):
 class DeliverableCreate(BaseModel):
     project_id: int
     name: str
-    due_date: Optional[date] = None
-    status: Optional[str] = None
+    due_date: date | None = None
+    status: str | None = None
 
 
 class DeliverableOut(DeliverableCreate):
@@ -174,7 +181,7 @@ class TagOut(TagCreate):
 
 class CollectionCreate(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class CollectionOut(CollectionCreate):
@@ -185,9 +192,9 @@ class CollectionOut(CollectionCreate):
 
 
 class RightsConsentCreate(BaseModel):
-    model_release_url: Optional[str] = None
-    property_release_url: Optional[str] = None
-    expiration: Optional[date] = None
+    model_release_url: str | None = None
+    property_release_url: str | None = None
+    expiration: date | None = None
     nda_required: bool = False
 
 
@@ -202,19 +209,19 @@ class AssetCreate(BaseModel):
     project_id: int
     type: AssetType
     src: str
-    width: Optional[int] = None
-    height: Optional[int] = None
-    duration_s: Optional[int] = None
-    color_profile: Optional[str] = None
-    checksum: Optional[str] = None
-    alt_text: Optional[str] = None
-    transcript: Optional[str] = None
-    captions: Optional[str] = None
-    exif_meta: Optional[Dict[str, str]] = None
-    rights_id: Optional[int] = None
+    width: int | None = None
+    height: int | None = None
+    duration_s: int | None = None
+    color_profile: str | None = None
+    checksum: str | None = None
+    alt_text: str | None = None
+    transcript: str | None = None
+    captions: str | None = None
+    exif_meta: dict[str, str] | None = None
+    rights_id: int | None = None
     visibility: AssetVisibility = AssetVisibility.public
-    nda_group: Optional[str] = None
-    expires_at: Optional[datetime] = None
+    nda_group: str | None = None
+    expires_at: datetime | None = None
 
 
 class AssetOut(AssetCreate):
@@ -226,13 +233,13 @@ class AssetOut(AssetCreate):
 
 class CaseStudyCreate(BaseModel):
     project_id: int
-    goal: Optional[str] = None
-    constraints: Optional[str] = None
-    process: Optional[str] = None
-    outcomes: Optional[str] = None
-    metrics: Optional[str] = None
-    behind_the_scenes: Optional[str] = None
-    lessons: Optional[str] = None
+    goal: str | None = None
+    constraints: str | None = None
+    process: str | None = None
+    outcomes: str | None = None
+    metrics: str | None = None
+    behind_the_scenes: str | None = None
+    lessons: str | None = None
 
 
 class CaseStudyOut(CaseStudyCreate):
@@ -247,7 +254,7 @@ class CaseStudyOut(CaseStudyCreate):
 
 class SkillCreate(BaseModel):
     name: str
-    category: Optional[str] = None
+    category: str | None = None
     level: int = 1
 
 
@@ -260,9 +267,9 @@ class SkillOut(SkillCreate):
 
 class SkillEvidenceCreate(BaseModel):
     skill_id: int
-    project_id: Optional[int] = None
-    note: Optional[str] = None
-    link: Optional[str] = None
+    project_id: int | None = None
+    note: str | None = None
+    link: str | None = None
 
 
 class SkillEvidenceOut(SkillEvidenceCreate):
@@ -275,7 +282,7 @@ class SkillEvidenceOut(SkillEvidenceCreate):
 class LearningGoalCreate(BaseModel):
     skill_id: int
     target_level: int
-    due_date: Optional[date] = None
+    due_date: date | None = None
 
 
 class LearningGoalOut(LearningGoalCreate):

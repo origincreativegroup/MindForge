@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Conversation flow management for Casey.
 
 The :class:`ConversationFlowManager` orchestrates follow-up question
@@ -7,7 +8,7 @@ with the OpenAI chat model and then rewrites the result to match the
 user's tone via :class:`ToneAdapter`.
 """
 
-from typing import List
+
 from .llm_client import chat
 from .memory import summarize_context
 from .tone_adapter import ToneAdapter
@@ -20,11 +21,13 @@ FOLLOWUP_SYSTEM = (
 
 
 class ConversationFlowManager:
-    def __init__(self, memory: VectorMemory | None = None, tone: ToneAdapter | None = None) -> None:
+    def __init__(
+        self, memory: VectorMemory | None = None, tone: ToneAdapter | None = None
+    ) -> None:
         self.memory = memory or VectorMemory()
         self.tone = tone or ToneAdapter()
 
-    def generate(self, conversation_id: str, history: List[str]) -> str:
+    def generate(self, conversation_id: str, history: list[str]) -> str:
         """Return the next follow-up question for ``history``."""
         if not history:
             return "Walk me through the very first step and who does it."

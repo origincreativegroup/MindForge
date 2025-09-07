@@ -4,11 +4,11 @@ Debug script for MindForge Casey MVP
 Checks dependencies, file structure, and common issues
 """
 
-import sys
-import os
-from pathlib import Path
-import subprocess
 import importlib.util
+import os
+import sys
+from pathlib import Path
+
 
 def check_python_version():
     """Check if Python version is compatible."""
@@ -20,14 +20,11 @@ def check_python_version():
     print("✅ Python version OK")
     return True
 
+
 def check_file_structure():
     """Check if required files exist."""
     base = Path(__file__).parent
-    required_files = [
-        "apps/backend/app.py",
-        "run.sh",
-        "README.md"
-    ]
+    required_files = ["apps/backend/app.py", "run.sh", "README.md"]
 
     missing_files = []
     for file_path in required_files:
@@ -41,21 +38,12 @@ def check_file_structure():
     print("✅ Core file structure OK")
     return True
 
+
 def check_dependencies():
     """Check if required Python packages are available."""
-    required_packages = [
-        "fastapi",
-        "uvicorn",
-        "jinja2",
-        "pydantic",
-        "httpx"
-    ]
+    required_packages = ["fastapi", "uvicorn", "jinja2", "pydantic", "httpx"]
 
-    optional_packages = [
-        "orjson",
-        "pypdf",
-        "sqlalchemy"
-    ]
+    optional_packages = ["orjson", "pypdf", "sqlalchemy"]
 
     missing_required = []
     missing_optional = []
@@ -81,6 +69,7 @@ def check_dependencies():
 
     return True
 
+
 def check_database_setup():
     """Check database configuration."""
     try:
@@ -89,6 +78,7 @@ def check_database_setup():
 
         try:
             from backend.models import Base, Conversation, Message, ProcessMap
+
             print("✅ Database models found")
         except ImportError as e:
             print(f"⚠️  Database models missing: {e}")
@@ -96,6 +86,7 @@ def check_database_setup():
 
         try:
             from backend.db import engine, get_db
+
             print("✅ Database configuration found")
         except ImportError as e:
             print(f"⚠️  Database configuration missing: {e}")
@@ -105,6 +96,7 @@ def check_database_setup():
     except Exception as e:
         print(f"⚠️  Database setup issue: {e}")
         return False
+
 
 def check_environment():
     """Check environment variables and configuration."""
@@ -127,13 +119,14 @@ def check_environment():
 
     return True
 
+
 def check_ports():
     """Check if default port is available."""
     import socket
 
     port = 8000
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        result = s.connect_ex(('localhost', port))
+        result = s.connect_ex(("localhost", port))
         if result == 0:
             print(f"⚠️  Port {port} is already in use")
             return False
@@ -141,25 +134,31 @@ def check_ports():
             print(f"✅ Port {port} is available")
             return True
 
+
 def run_basic_import_test():
     """Test basic imports."""
     try:
         sys.path.append(str(Path(__file__).parent / "apps"))
-        from backend.app import app
         print("✅ App imports successfully")
         return True
     except Exception as e:
         print(f"❌ App import failed: {e}")
         return False
 
+
 def suggest_fixes():
     """Suggest common fixes."""
     print("\n🔧 Common fixes:")
     print("1. Install dependencies: poetry install")
-    print("2. Run in simple mode: USE_DATABASE=false poetry run uvicorn apps.backend.app:app --reload")
-    print("3. Enable database mode: USE_DATABASE=true poetry run uvicorn apps.backend.app:app --reload")
+    print(
+        "2. Run in simple mode: USE_DATABASE=false poetry run uvicorn apps.backend.app:app --reload"
+    )
+    print(
+        "3. Enable database mode: USE_DATABASE=true poetry run uvicorn apps.backend.app:app --reload"
+    )
     print("4. Check logs for detailed errors")
     print("5. Ensure you're in a virtual environment")
+
 
 def main():
     """Main debug function."""
@@ -196,6 +195,7 @@ def main():
     else:
         print(f"⚠️  {passed}/{total} checks passed. See issues above.")
         suggest_fixes()
+
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,7 @@
 """LangChain powered process element extraction."""
 
-from langchain.prompts import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 
 from .prompts import EXTRACTION_SYSTEM_PROMPT

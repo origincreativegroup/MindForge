@@ -1,4 +1,5 @@
-from integrations.database import engine, SessionLocal, init_db
+from integrations.database import SessionLocal, init_db
+
 from .models import Base
 
 # Initialize tables on startup

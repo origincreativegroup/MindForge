@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from typing import Any
+
 import yaml
-from typing import Any, Dict, List
 
 from .ast import Process, Step
 from .errors import PDLParseError
 
 
-def _parse_step(raw: Dict[str, Any]) -> Step:
+def _parse_step(raw: dict[str, Any]) -> Step:
     if "id" not in raw or "type" not in raw:
         raise PDLParseError("Each step requires 'id' and 'type'")
     branches = {}
@@ -37,6 +38,6 @@ def parse(text: str) -> Process:
         raise PDLParseError("Root must contain 'process')")
     pdata = data["process"]
     name = pdata.get("name", "")
-    raw_steps: List[Dict[str, Any]] = pdata.get("steps", [])
+    raw_steps: list[dict[str, Any]] = pdata.get("steps", [])
     steps = [_parse_step(s) for s in raw_steps]
     return Process(name=name, steps=steps)

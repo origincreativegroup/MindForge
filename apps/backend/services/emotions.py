@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
 # Mapping of emotions to indicative keywords.  The list is intentionally small
 # and purely lexical; it acts as a deterministic stub for more advanced models.
 EMOTION_KEYWORDS = {
@@ -14,7 +12,7 @@ EMOTION_KEYWORDS = {
 }
 
 
-def emotional_scores(text: str) -> Dict[str, float]:
+def emotional_scores(text: str) -> dict[str, float]:
     """Return rudimentary emotion scores for ``text``.
 
     The score for each emotion is the fraction of its keywords present in the
@@ -24,7 +22,7 @@ def emotional_scores(text: str) -> Dict[str, float]:
     """
 
     lower = text.lower()
-    scores: Dict[str, float] = {}
+    scores: dict[str, float] = {}
     for emotion, keywords in EMOTION_KEYWORDS.items():
         hits = sum(1 for k in keywords if k in lower)
         scores[emotion] = min(hits / len(keywords), 1.0)

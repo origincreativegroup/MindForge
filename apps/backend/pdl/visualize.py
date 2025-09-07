@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict, List
-
 from .ast import Process
 
 
-def to_flowchart(proc: Process) -> Dict[str, List[Dict[str, str]]]:
-    nodes = [
-        {"id": s.id, "type": s.type, "actor": s.actor or ""} for s in proc.steps
-    ]
-    edges: List[Dict[str, str]] = []
+def to_flowchart(proc: Process) -> dict[str, list[dict[str, str]]]:
+    nodes = [{"id": s.id, "type": s.type, "actor": s.actor or ""} for s in proc.steps]
+    edges: list[dict[str, str]] = []
     for s in proc.steps:
         if s.next:
             edges.append({"from": s.id, "to": s.next, "label": ""})

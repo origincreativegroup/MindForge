@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import Set
-
-from .ast import Process, Step
+from .ast import Process
 from .errors import PDLSemanticError
 
 
 def validate(proc: Process) -> None:
     """Validate semantic correctness of a process."""
 
-    ids: Set[str] = set()
+    ids: set[str] = set()
     for step in proc.steps:
         if step.id in ids:
             raise PDLSemanticError(f"Duplicate step id '{step.id}'")

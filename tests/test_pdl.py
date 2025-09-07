@@ -6,7 +6,7 @@ project_root = Path(__file__).resolve().parents[1]
 sys.path.append(str(project_root / "apps"))
 sys.path.append(str(project_root / "packages"))
 
-from backend.pdl import parser, semantic, codegen, optimizer, visualize, errors
+from backend.pdl import codegen, errors, optimizer, parser, semantic, visualize
 
 
 def sample_yaml():

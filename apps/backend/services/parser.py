@@ -9,7 +9,6 @@ reason about the process being described.
 from __future__ import annotations
 
 import re
-from typing import Dict, List
 
 # Regular expressions for different element types -----------------------------
 ACTOR_PATTERN = re.compile(
@@ -26,7 +25,7 @@ DECISION_PATTERN = re.compile(
 )
 
 
-def parse_response(text: str) -> Dict[str, List[str]]:
+def parse_response(text: str) -> dict[str, list[str]]:
     """Extract rudimentary process elements from ``text``.
 
     Parameters

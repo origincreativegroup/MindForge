@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Tone adaptation utilities for Casey.
 
 This module exposes :class:`ToneAdapter` which analyses a user's latest
@@ -7,7 +8,7 @@ responses to mirror that tone.  No persona selection is required; the
 style is inferred on the fly from the dialogue.
 """
 
-from typing import Optional
+
 from .llm_client import chat
 
 
@@ -15,7 +16,7 @@ class ToneAdapter:
     """Detect and mirror the user's tone in Casey's responses."""
 
     def __init__(self) -> None:
-        self.style: Optional[str] = None
+        self.style: str | None = None
 
     def update(self, user_message: str) -> None:
         """Derive a short description of the user's tone.
@@ -25,7 +26,10 @@ class ToneAdapter:
         """
 
         prompt = [
-            {"role": "system", "content": "Describe the tone and style of the user's message in a few words."},
+            {
+                "role": "system",
+                "content": "Describe the tone and style of the user's message in a few words.",
+            },
             {"role": "user", "content": user_message},
         ]
         try:
@@ -40,7 +44,7 @@ class ToneAdapter:
         prompt = [
             {
                 "role": "system",
-                "content": f"Rewrite the assistant response using this tone: {self.style}"
+                "content": f"Rewrite the assistant response using this tone: {self.style}",
             },
             {"role": "user", "content": assistant_message},
         ]

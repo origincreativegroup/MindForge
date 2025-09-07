@@ -1,25 +1,27 @@
 """Database models for MindForge."""
 
 from enum import Enum as PyEnum
+
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
     Integer,
     String,
-    Text,
-    DateTime,
-    ForeignKey,
-    JSON,
-    Date,
-    Boolean,
-    Enum,
     Table,
-    Index,
+    Text,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 Base = declarative_base()
+
 
 class Conversation(Base):
     __tablename__ = "conversations"
@@ -29,8 +31,13 @@ class Conversation(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
-    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
-    process_maps = relationship("ProcessMap", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship(
+        "Message", back_populates="conversation", cascade="all, delete-orphan"
+    )
+    process_maps = relationship(
+        "ProcessMap", back_populates="conversation", cascade="all, delete-orphan"
+    )
+
 
 class Message(Base):
     __tablename__ = "messages"
@@ -44,6 +51,7 @@ class Message(Base):
 
     # Relationships
     conversation = relationship("Conversation", back_populates="messages")
+
 
 class ProcessMap(Base):
     __tablename__ = "process_maps"
@@ -154,14 +162,20 @@ class Project(Base):
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
-    assets = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    assets = relationship(
+        "Asset", back_populates="project", cascade="all, delete-orphan"
+    )
     roles = relationship("Role", back_populates="project", cascade="all, delete-orphan")
-    deliverables = relationship("Deliverable", back_populates="project", cascade="all, delete-orphan")
+    deliverables = relationship(
+        "Deliverable", back_populates="project", cascade="all, delete-orphan"
+    )
     case_study = relationship("CaseStudy", back_populates="project", uselist=False)
     skills = relationship("Skill", secondary=project_skills, back_populates="projects")
     tools = relationship("Tool", secondary=project_tools, back_populates="projects")
     tags = relationship("Tag", secondary=project_tags, back_populates="projects")
-    collections = relationship("Collection", secondary=collection_projects, back_populates="projects")
+    collections = relationship(
+        "Collection", secondary=collection_projects, back_populates="projects"
+    )
 
 
 Index(
@@ -220,7 +234,9 @@ class Collection(Base):
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
 
-    projects = relationship("Project", secondary=collection_projects, back_populates="collections")
+    projects = relationship(
+        "Project", secondary=collection_projects, back_populates="collections"
+    )
 
 
 class RightsConsent(Base):
@@ -252,7 +268,9 @@ class Asset(Base):
     captions = Column(Text, nullable=True)
     exif_meta = Column(JSON, nullable=True)
     rights_id = Column(Integer, ForeignKey("rights_consents.id"), nullable=True)
-    visibility = Column(Enum(AssetVisibility), default=AssetVisibility.public, nullable=False)
+    visibility = Column(
+        Enum(AssetVisibility), default=AssetVisibility.public, nullable=False
+    )
     nda_group = Column(String, nullable=True)
     expires_at = Column(DateTime, nullable=True)
 
@@ -297,9 +315,15 @@ class Skill(Base):
     category = Column(String, nullable=True)
     level = Column(Integer, default=1)
 
-    projects = relationship("Project", secondary=project_skills, back_populates="skills")
-    evidence = relationship("SkillEvidence", back_populates="skill", cascade="all, delete-orphan")
-    goals = relationship("LearningGoal", back_populates="skill", cascade="all, delete-orphan")
+    projects = relationship(
+        "Project", secondary=project_skills, back_populates="skills"
+    )
+    evidence = relationship(
+        "SkillEvidence", back_populates="skill", cascade="all, delete-orphan"
+    )
+    goals = relationship(
+        "LearningGoal", back_populates="skill", cascade="all, delete-orphan"
+    )
 
 
 class SkillEvidence(Base):

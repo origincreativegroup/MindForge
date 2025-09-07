@@ -14,6 +14,7 @@ PERSONA_PROMPTS = {
     "executive": "Adopt an executive mindset: probe for outcomes, KPIs, cost, and risk.",
 }
 
+
 def interviewer_user(history_plain: str, persona: str = "default") -> str:
     """Generate user prompt for interviewer with persona."""
     persona_note = PERSONA_PROMPTS.get(persona, PERSONA_PROMPTS["default"])
@@ -25,10 +26,12 @@ Conversation so far:
 Now ask exactly ONE next question that moves us closer to a clean process map
 (steps, actors, tools, decisions, handoffs, failure points). Output just the question."""
 
+
 # Process extraction prompts
 EXTRACTOR_SYSTEM = """You extract business-process structure from text.
 Return STRICT JSON ONLY with keys: steps, actors, tools, decisions, inputs, outputs (each an array of strings).
 Be terse, deduplicate, preserve order if obvious, and avoid commentary."""
+
 
 def extractor_user(history_plain: str) -> str:
     """Generate user prompt for process extraction."""
@@ -40,9 +43,11 @@ TEXT:
 Return JSON exactly:
 {{"steps": [...], "actors": [...], "tools": [...], "decisions": [...], "inputs": [...], "outputs": [...]}}"""
 
+
 # Mirror/understanding prompts
 MIRROR_SYSTEM = """You restate and verify understanding.
 Speak concisely in plain language. Offer a short checklist at the end."""
+
 
 def mirror_user(history_plain: str) -> str:
     """Generate user prompt for mirroring understanding."""
@@ -54,12 +59,16 @@ Then provide a 4–7 bullet checklist capturing the process as it stands.
 TEXT:
 {history_plain}"""
 
+
 # Engaging/discovery mode prompts (for nextq.py)
 ENGAGING_SYSTEM = """You are Casey, an engaging process discovery assistant.
 Your role is to ask thoughtful, targeted questions that help users discover and articulate their business processes.
 Be curious, empathetic, and adaptive to their emotional state and expertise level."""
 
-def engaging_next_user(history_plain: str, focus_stage: str = "steps", negative_tone: bool = False) -> str:
+
+def engaging_next_user(
+    history_plain: str, focus_stage: str = "steps", negative_tone: bool = False
+) -> str:
     """Generate engaging next question prompt based on conversation state."""
 
     tone_adjust = ""
@@ -74,7 +83,7 @@ def engaging_next_user(history_plain: str, focus_stage: str = "steps", negative_
         "io": "Understand inputs, outputs, and information flow.",
         "exceptions": "Explore error handling, edge cases, and failure modes.",
         "metrics": "Discover success criteria, KPIs, and measurement.",
-        "automation": "Identify opportunities for improvement and automation."
+        "automation": "Identify opportunities for improvement and automation.",
     }
 
     stage_focus = stage_guidance.get(focus_stage, stage_guidance["steps"])
@@ -86,6 +95,7 @@ Conversation so far:
 
 Ask ONE specific, engaging question that helps discover more about the "{focus_stage}" aspect of their process.
 Make it conversational and natural. Output just the question."""
+
 
 # Advanced prompting templates
 CASEY_PERSONALITY_PROMPT = """
@@ -121,19 +131,22 @@ Never:
 - Make assumptions about their processes
 """
 
+
 def casey_personality_prompt() -> str:
     """Return the canonical interviewer personality prompt."""
     return CASEY_PERSONALITY_PROMPT.strip()
+
 
 # Simulation and analysis prompts
 SIMULATION_SYSTEM = """You analyze business processes for bottlenecks and optimization opportunities.
 Consider factors like: manual steps, approval chains, wait times, handoffs, and complexity."""
 
+
 def simulation_user(process_data: dict, scale_factor: float = 1.0) -> str:
     """Generate prompt for process simulation analysis."""
-    steps = process_data.get('steps', [])
-    actors = process_data.get('actors', [])
-    tools = process_data.get('tools', [])
+    steps = process_data.get("steps", [])
+    actors = process_data.get("actors", [])
+    tools = process_data.get("tools", [])
 
     return f"""Analyze this process for bottlenecks at {scale_factor}x normal load:
 
@@ -144,9 +157,11 @@ Tools: {tools}
 Identify the likely bottleneck step and estimate relative risk scores for each step.
 Consider: manual work, approvals, handoffs, complexity, tool dependencies."""
 
+
 # Question generation prompts
 QUESTION_GENERATION_SYSTEM = """You generate the next best question to understand a business process.
 Focus on one specific aspect at a time. Be conversational and natural."""
+
 
 def next_question_user(context: str, missing_areas: list) -> str:
     """Generate prompt for next question based on missing information."""
@@ -159,6 +174,7 @@ Context:
 Generate a natural, conversational question that will help fill in the missing information.
 Output just the question."""
 
+
 # Error and fallback templates
 FALLBACK_QUESTIONS = [
     "Can you walk me through what happens in the very next step?",
@@ -168,8 +184,9 @@ FALLBACK_QUESTIONS = [
     "What happens if something goes wrong here?",
     "How long does this usually take?",
     "What information do you need to get started?",
-    "Who else gets involved in this process?"
+    "Who else gets involved in this process?",
 ]
+
 
 def get_fallback_question(conversation_length: int = 0) -> str:
     """Get an appropriate fallback question based on conversation state."""
@@ -179,4 +196,5 @@ def get_fallback_question(conversation_length: int = 0) -> str:
         return FALLBACK_QUESTIONS[1]  # Focus on actors
     else:
         import random
+
         return random.choice(FALLBACK_QUESTIONS[2:])  # Mix of other questions

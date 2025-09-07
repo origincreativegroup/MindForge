@@ -1,0 +1,46 @@
+repos:
+  # Python code quality
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --fix
+        language: system
+        files: \.py$
+        pass_filenames: true
+        
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format
+        language: system
+        files: \.py$
+        pass_filenames: true
+
+  # JavaScript/TypeScript code quality
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: bash -c 'cd apps/frontend && pnpm lint:fix'
+        language: system
+        files: \.(js|jsx|ts|tsx)$
+        pass_filenames: false
+
+  # Code formatting
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: bash -c 'cd apps/frontend && pnpm format'
+        language: system
+        files: \.(js|jsx|ts|tsx|json|css|md|yml|yaml)$
+        pass_filenames: false
+
+  # Basic checks
+  - repo: local
+    hooks:
+      - id: check-yaml
+        name: Check Yaml
+        entry: python -c "import yaml; import sys; [yaml.safe_load(open(f)) for f in sys.argv[1:]]"
+        language: system
+        files: \.ya?ml$

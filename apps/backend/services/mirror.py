@@ -2,11 +2,12 @@ from .llm_client import chat
 from .memory import summarize_context, window_messages
 from .prompts import MIRROR_SYSTEM, mirror_user
 
+
 def mirror_understanding(history_texts, max_len=3000) -> str:
     history_plain = summarize_context(history_texts, max_len=max_len)
     messages = [
         {"role": "system", "content": MIRROR_SYSTEM},
-        {"role": "user",   "content": mirror_user(history_plain)},
+        {"role": "user", "content": mirror_user(history_plain)},
     ]
     messages = window_messages(messages, max_chars=6000)
     try:

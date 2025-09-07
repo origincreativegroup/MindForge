@@ -24,17 +24,17 @@ for the small simulated datasets used in tests.
 """
 
 from collections import Counter, defaultdict
-from typing import DefaultDict, Dict, Iterable, List, Sequence, Tuple
+from collections.abc import Sequence
 
-TransitionCounts = DefaultDict[str, Counter]
-QTable = DefaultDict[str, Dict[str, float]]
+TransitionCounts = defaultdict[str, Counter]
+QTable = defaultdict[str, dict[str, float]]
 
 
 class ProcessIntelligenceEngine:
     """Engine that captures and reasons about process executions."""
 
     def __init__(self) -> None:
-        self.history: List[List[str]] = []
+        self.history: list[list[str]] = []
         # transition_counts[A][B] -> how often step B followed step A
         self.transition_counts: TransitionCounts = defaultdict(Counter)
         self.step_counts: Counter = Counter()
@@ -57,7 +57,7 @@ class ProcessIntelligenceEngine:
             return
         self.history.append(seq)
         self.step_counts.update(seq)
-        for a, b in zip(seq, seq[1:]):
+        for a, b in zip(seq, seq[1:], strict=False):
             self.transition_counts[a][b] += 1
 
     # ------------------------------------------------------------------
@@ -84,10 +84,10 @@ class ProcessIntelligenceEngine:
             return 5
         return 4
 
-    def recognize_patterns(self) -> Dict[str, Tuple[str, int]]:
+    def recognize_patterns(self) -> dict[str, tuple[str, int]]:
         """Return the most common next step for each observed step."""
 
-        patterns: Dict[str, Tuple[str, int]] = {}
+        patterns: dict[str, tuple[str, int]] = {}
         for step, counter in self.transition_counts.items():
             if counter:
                 nxt, count = counter.most_common(1)[0]
@@ -97,7 +97,7 @@ class ProcessIntelligenceEngine:
     # ------------------------------------------------------------------
     # Anomaly detection & prediction
     # ------------------------------------------------------------------
-    def detect_anomalies(self, execution: Sequence[str]) -> List[str]:
+    def detect_anomalies(self, execution: Sequence[str]) -> list[str]:
         """Detect rarely seen steps in *execution*.
 
         A step is considered anomalous if its frequency is less than half
@@ -111,7 +111,7 @@ class ProcessIntelligenceEngine:
         anomalies = [s for s in execution if self.step_counts[s] < threshold]
         return anomalies
 
-    def predict_next_action(self, execution: Sequence[str]) -> Tuple[str | None, float]:
+    def predict_next_action(self, execution: Sequence[str]) -> tuple[str | None, float]:
         """Predict the next action after the provided *execution*.
 
         Returns a tuple of (step, confidence).  Confidence is the
@@ -132,7 +132,15 @@ class ProcessIntelligenceEngine:
     # ------------------------------------------------------------------
     # Reinforcement learning
     # ------------------------------------------------------------------
-    def update_q(self, state: str, action: str, reward: float, *, alpha: float = 0.1, gamma: float = 0.9) -> None:
+    def update_q(
+        self,
+        state: str,
+        action: str,
+        reward: float,
+        *,
+        alpha: float = 0.1,
+        gamma: float = 0.9,
+    ) -> None:
         """Update the Q-table using the Q-learning rule."""
 
         old = self.q_table[state].get(action, 0.0)
@@ -155,10 +163,10 @@ class ProcessIntelligenceEngine:
     # ------------------------------------------------------------------
     # Self improvement
     # ------------------------------------------------------------------
-    def self_improvement_suggestions(self, execution: Sequence[str]) -> List[str]:
+    def self_improvement_suggestions(self, execution: Sequence[str]) -> list[str]:
         """Generate simple suggestions for improving a process."""
 
-        suggestions: List[str] = []
+        suggestions: list[str] = []
         anomalies = self.detect_anomalies(execution)
         if anomalies:
             suggestions.append(f"Review unusual steps: {', '.join(anomalies)}")

@@ -1,5 +1,9 @@
 {
   "name": "mindforge",
   "private": true,
-  "workspaces": ["apps/frontend", "packages/*"]
+  "workspaces": ["apps/frontend", "packages/*"],
+  "scripts": {
+    "install-precommit": "pre-commit install && pre-commit install --hook-type commit-msg",
+    "precommit": "pre-commit run --all-files"
+  }
 }

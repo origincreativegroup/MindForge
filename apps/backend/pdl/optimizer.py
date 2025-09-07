@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from typing import List
-
 from .ast import Process
 
 
-def find_optimizations(proc: Process) -> List[str]:
+def find_optimizations(proc: Process) -> list[str]:
     """Find simple optimization opportunities."""
 
-    suggestions: List[str] = []
-    for s1, s2 in zip(proc.steps, proc.steps[1:]):
+    suggestions: list[str] = []
+    for s1, s2 in zip(proc.steps, proc.steps[1:], strict=False):
         if (
             s1.type == "task"
             and s2.type == "task"

@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import inspect
 import warnings
+from collections.abc import AsyncIterable, AsyncIterator, Iterable, Iterator, Mapping
 from json import dumps as json_dumps
 from typing import (
     Any,
-    AsyncIterable,
-    AsyncIterator,
-    Iterable,
-    Iterator,
-    Mapping,
 )
 from urllib.parse import urlencode
 

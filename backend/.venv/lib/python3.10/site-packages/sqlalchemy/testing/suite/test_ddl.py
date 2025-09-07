@@ -8,24 +8,22 @@
 
 import random
 
-from . import testing
-from .. import config
-from .. import fixtures
-from .. import util
-from ..assertions import eq_
-from ..assertions import is_false
-from ..assertions import is_true
+from ... import (
+    CheckConstraint,
+    Column,
+    ForeignKeyConstraint,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+    inspect,
+    schema,
+)
+from .. import config, fixtures, util
+from ..assertions import eq_, is_false, is_true
 from ..config import requirements
 from ..schema import Table
-from ... import CheckConstraint
-from ... import Column
-from ... import ForeignKeyConstraint
-from ... import Index
-from ... import inspect
-from ... import Integer
-from ... import schema
-from ... import String
-from ... import UniqueConstraint
+from . import testing
 
 
 class TableDDLTest(fixtures.TestBase):
@@ -108,9 +106,7 @@ class TableDDLTest(fixtures.TestBase):
         table.comment = "a comment"
         connection.execute(schema.SetTableComment(table))
         connection.execute(schema.DropTableComment(table))
-        eq_(
-            inspect(connection).get_table_comment("test_table"), {"text": None}
-        )
+        eq_(inspect(connection).get_table_comment("test_table"), {"text": None})
 
     @requirements.table_ddl_if_exists
     @util.provide_metadata
@@ -131,20 +127,14 @@ class TableDDLTest(fixtures.TestBase):
         is_true(inspect(connection).has_table("test_table"))
         is_false(
             "test_index"
-            in [
-                ix["name"]
-                for ix in inspect(connection).get_indexes("test_table")
-            ]
+            in [ix["name"] for ix in inspect(connection).get_indexes("test_table")]
         )
 
         connection.execute(schema.CreateIndex(idx, if_not_exists=True))
 
         is_true(
             "test_index"
-            in [
-                ix["name"]
-                for ix in inspect(connection).get_indexes("test_table")
-            ]
+            in [ix["name"] for ix in inspect(connection).get_indexes("test_table")]
         )
 
         connection.execute(schema.CreateIndex(idx, if_not_exists=True))
@@ -173,20 +163,14 @@ class TableDDLTest(fixtures.TestBase):
 
         is_true(
             "test_index"
-            in [
-                ix["name"]
-                for ix in inspect(connection).get_indexes("test_table")
-            ]
+            in [ix["name"] for ix in inspect(connection).get_indexes("test_table")]
         )
 
         connection.execute(schema.DropIndex(idx, if_exists=True))
 
         is_false(
             "test_index"
-            in [
-                ix["name"]
-                for ix in inspect(connection).get_indexes("test_table")
-            ]
+            in [ix["name"] for ix in inspect(connection).get_indexes("test_table")]
         )
 
         connection.execute(schema.DropIndex(idx, if_exists=True))
@@ -372,9 +356,7 @@ class LongNameBlowoutTest(fixtures.TestBase):
         argnames="type_",
     )
     def test_long_convention_name(self, type_, metadata, connection):
-        actual_name, reflected_name = getattr(self, type_)(
-            metadata, connection
-        )
+        actual_name, reflected_name = getattr(self, type_)(metadata, connection)
 
         assert len(actual_name) > 255
 

@@ -1,17 +1,23 @@
 """Emotion scoring functionality for Casey conversations."""
 
-from typing import Dict
-import re
-
 # Emotion keywords mapping
 EMOTION_KEYWORDS = {
-    "frustrated": ["frustrated", "annoyed", "irritating", "redo", "pain", "stuck", "blocked"],
+    "frustrated": [
+        "frustrated",
+        "annoyed",
+        "irritating",
+        "redo",
+        "pain",
+        "stuck",
+        "blocked",
+    ],
     "concerned": ["worried", "concerned", "anxious", "unsure", "uncertain"],
     "confident": ["confident", "sure", "certain", "ready", "good"],
     "excited": ["excited", "eager", "enthusiastic", "can't wait", "love"],
     "tired": ["tired", "exhausted", "overwhelmed", "burned out"],
     "confused": ["confused", "unclear", "don't understand", "lost"],
 }
+
 
 def score_emotion(text: str) -> str:
     """Score the emotional tone of text and return the dominant emotion.
@@ -45,7 +51,8 @@ def score_emotion(text: str) -> str:
     dominant_emotion = max(scores.items(), key=lambda x: x[1])[0]
     return dominant_emotion
 
-def get_emotion_scores(text: str) -> Dict[str, float]:
+
+def get_emotion_scores(text: str) -> dict[str, float]:
     """Get detailed emotion scores for text.
 
     Args:
@@ -55,7 +62,7 @@ def get_emotion_scores(text: str) -> Dict[str, float]:
         Dictionary mapping emotion names to normalized scores (0.0-1.0)
     """
     if not text:
-        return {emotion: 0.0 for emotion in EMOTION_KEYWORDS.keys()}
+        return dict.fromkeys(EMOTION_KEYWORDS.keys(), 0.0)
 
     text_lower = text.lower()
     scores = {}

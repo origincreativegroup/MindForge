@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -10,10 +9,10 @@ class Step:
 
     id: str
     type: str
-    actor: Optional[str] = None
-    next: Optional[str] = None
-    condition: Optional[str] = None
-    branches: Dict[str, str] = field(default_factory=dict)
+    actor: str | None = None
+    next: str | None = None
+    condition: str | None = None
+    branches: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -21,7 +20,7 @@ class Process:
     """Top level process definition."""
 
     name: str
-    steps: List[Step]
+    steps: list[Step]
 
-    def step_map(self) -> Dict[str, Step]:
+    def step_map(self) -> dict[str, Step]:
         return {s.id: s for s in self.steps}

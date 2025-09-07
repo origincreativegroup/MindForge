@@ -1,5 +1,5 @@
-import React from 'react';
-import ProcessVisualizer from './components/ProcessVisualizer.jsx';
+import React from 'react'
+import ProcessVisualizer from './components/ProcessVisualizer.jsx'
 
 export default function App() {
   return (
@@ -25,5 +25,5 @@ export default function App() {
         </div>
       </main>
     </div>
-  );
+  )
 }

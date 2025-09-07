@@ -47,4 +47,3 @@ def rebalance(req: RebalanceRequest):
 
     workforce_matrix.rebalance_capabilities(req.growth)
     return {"thresholds": workforce_matrix.THRESHOLDS}
-

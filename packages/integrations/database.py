@@ -1,6 +1,7 @@
 """Database integration layer for MindForge."""
 
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

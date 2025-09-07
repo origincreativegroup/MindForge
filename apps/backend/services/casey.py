@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Dict
-
-from .parser import parse_response
 from .emotions import emotional_scores
 from .memory import ContextMemory
+from .parser import parse_response
 
 
 class Casey:
@@ -21,7 +19,7 @@ class Casey:
     def __init__(self, memory: ContextMemory | None = None) -> None:
         self.memory = memory or ContextMemory()
 
-    def ingest(self, role: str, text: str) -> Dict[str, Dict[str, object]]:
+    def ingest(self, role: str, text: str) -> dict[str, dict[str, object]]:
         """Ingest a new utterance and update memory stores.
 
         Parameters
@@ -49,5 +47,5 @@ class Casey:
     def transcript(self) -> str:
         return self.memory.transcript()
 
-    def latest_emotion(self) -> Dict[str, float]:
+    def latest_emotion(self) -> dict[str, float]:
         return self.memory.latest_emotion()

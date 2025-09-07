@@ -6,17 +6,18 @@
 # the MIT License: https://www.opensource.org/licenses/mit-license.php
 # mypy: ignore-errors
 
-from sqlalchemy import bindparam
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import MetaData
-from sqlalchemy import select
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import testing
-from sqlalchemy import text
-from sqlalchemy.testing import eq_
-from sqlalchemy.testing import fixtures
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    bindparam,
+    select,
+    testing,
+    text,
+)
+from sqlalchemy.testing import eq_, fixtures
 
 
 class RowCountTest(fixtures.TablesTest):
@@ -65,18 +66,16 @@ class RowCountTest(fixtures.TablesTest):
 
     def test_basic(self, connection):
         employees_table = self.tables.employees
-        s = select(
-            employees_table.c.name, employees_table.c.department
-        ).order_by(employees_table.c.employee_id)
+        s = select(employees_table.c.name, employees_table.c.department).order_by(
+            employees_table.c.employee_id
+        )
         rows = connection.execute(s).fetchall()
 
         eq_(rows, self.data)
 
     @testing.variation("statement", ["update", "delete", "insert", "select"])
     @testing.variation("close_first", [True, False])
-    def test_non_rowcount_scenarios_no_raise(
-        self, connection, statement, close_first
-    ):
+    def test_non_rowcount_scenarios_no_raise(self, connection, statement, close_first):
         employees_table = self.tables.employees
 
         # WHERE matches 3, 3 rows changed
@@ -102,9 +101,9 @@ class RowCountTest(fixtures.TablesTest):
                 ],
             )
         elif statement.select:
-            s = select(
-                employees_table.c.name, employees_table.c.department
-            ).where(employees_table.c.department == "C")
+            s = select(employees_table.c.name, employees_table.c.department).where(
+                employees_table.c.department == "C"
+            )
             r = connection.execute(s)
             r.all()
         else:
@@ -183,11 +182,7 @@ class RowCountTest(fixtures.TablesTest):
                 .return_defaults()
             )
         elif dml.delete:
-            stmt = (
-                employees_table.delete()
-                .where(department == "C")
-                .return_defaults()
-            )
+            stmt = employees_table.delete().where(department == "C").return_defaults()
         else:
             dml.fail()
 
@@ -213,9 +208,7 @@ class RowCountTest(fixtures.TablesTest):
 
         # WHERE matches 3, 3 rows deleted
         department = employees_table.c.department
-        r = connection.execute(
-            employees_table.delete().where(department == "C")
-        )
+        r = connection.execute(employees_table.delete().where(department == "C"))
         eq_(r.rowcount, 3)
 
     @testing.requires.sane_multi_rowcount

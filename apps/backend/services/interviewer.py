@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import List
+
 from .conversation_flow import ConversationFlowManager
 
 _manager = ConversationFlowManager()
 
 
-def next_questions(history: List[str], conversation_id: str = "default") -> List[str]:
+def next_questions(history: list[str], conversation_id: str = "default") -> list[str]:
     """Return the next question Casey should ask.
 
     Parameters

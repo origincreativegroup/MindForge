@@ -8,8 +8,7 @@ Workforce Intelligence system.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from typing import Dict
+from dataclasses import asdict, dataclass
 
 # Thresholds controlling quadrant classification.
 THRESHOLDS = {
@@ -32,7 +31,7 @@ class TaskMetrics:
     roi: float
     migration_path: str
 
-    def to_dict(self) -> Dict[str, float | str]:
+    def to_dict(self) -> dict[str, float | str]:
         return asdict(self)
 
 
@@ -85,9 +84,10 @@ def classify_quadrant(
 
     if automation_potential > THRESHOLDS["automate_potential"] and human_value < 0.3:
         return "Automate"
-    if automation_potential > THRESHOLDS["semi_potential"] and complexity < THRESHOLDS[
-        "complexity_limit"
-    ]:
+    if (
+        automation_potential > THRESHOLDS["semi_potential"]
+        and complexity < THRESHOLDS["complexity_limit"]
+    ):
         return "Semi-Automate"
     if human_value < THRESHOLDS["human_value_limit"]:
         return "AI Copilot"
@@ -123,9 +123,7 @@ def rebalance_capabilities(growth: float) -> None:
     THRESHOLDS["automate_potential"] = max(
         0.5, THRESHOLDS["automate_potential"] - growth
     )
-    THRESHOLDS["semi_potential"] = max(
-        0.3, THRESHOLDS["semi_potential"] - growth / 2
-    )
+    THRESHOLDS["semi_potential"] = max(0.3, THRESHOLDS["semi_potential"] - growth / 2)
 
 
 def evaluate_task(description: str) -> TaskMetrics:
@@ -165,4 +163,3 @@ def evaluate_scenario(
     metrics.roi = predict_roi(metrics.automation_potential, metrics.human_value)
     metrics.migration_path = migration_path(metrics.quadrant)
     return metrics
-

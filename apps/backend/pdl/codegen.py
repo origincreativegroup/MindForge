@@ -16,10 +16,10 @@ def generate_python(proc: Process) -> str:
             cond = step.condition or "False"
             then = step.branches.get("then")
             other = step.branches.get("else")
-            lines.append(f"{indent}if eval(\"{cond}\", {{}}, context):")
-            lines.append(f"{indent*2}next_step = '{then}'")
+            lines.append(f'{indent}if eval("{cond}", {{}}, context):')
+            lines.append(f"{indent * 2}next_step = '{then}'")
             lines.append(f"{indent}else:")
-            lines.append(f"{indent*2}next_step = '{other}'")
+            lines.append(f"{indent * 2}next_step = '{other}'")
         elif step.type == "end":
             lines.append(f"{indent}next_step = None")
         lines.append(f"{indent}yield '{step.id}', next_step")
@@ -40,10 +40,10 @@ def generate_javascript(proc: Process) -> str:
             then = step.branches.get("then")
             other = step.branches.get("else")
             lines.append(f'{indent}if (eval("{cond}")) {{')
-            lines.append(f"{indent*2}next_step = '{then}';")
-            lines.append(f'{indent}}} else {{')
-            lines.append(f"{indent*2}next_step = '{other}';")
-            lines.append(f'{indent}}}')
+            lines.append(f"{indent * 2}next_step = '{then}';")
+            lines.append(f"{indent}}} else {{")
+            lines.append(f"{indent * 2}next_step = '{other}';")
+            lines.append(f"{indent}}}")
         elif step.type == "end":
             lines.append(f"{indent}next_step = null;")
         lines.append(f"{indent}yield ['{step.id}', next_step];")

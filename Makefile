@@ -1,4 +1,4 @@
-.PHONY: dev test lint typecheck build up down seed
+.PHONY: dev test lint typecheck build up down seed install-precommit precommit
 
 DEV_BACKEND=apps/backend
 DEV_FRONTEND=apps/frontend
@@ -30,3 +30,10 @@ down:
 
 seed:
 	python ops/seed.py
+
+install-precommit:
+	pre-commit install
+	pre-commit install --hook-type commit-msg
+
+precommit:
+	pre-commit run --all-files

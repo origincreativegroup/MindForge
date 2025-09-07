@@ -1,19 +1,20 @@
-import os
-import time
 import asyncio
+import os
 import re
-import random
+import time
 from pathlib import Path
-from typing import Dict, List
-from fastapi import FastAPI, Request, UploadFile, File
-from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
+
+from fastapi import FastAPI, File, Request, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
 from .middleware import AssetAccessMiddleware
 
 # Fix: Use absolute imports instead of relative imports
 try:
     from routers import workforce
+
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")
@@ -26,10 +27,10 @@ app = FastAPI(title="Casey · MindForge", debug=True)
 app.add_middleware(AssetAccessMiddleware)
 
 # Setup static files and templates
-(BASE/"static").mkdir(exist_ok=True)
-(BASE/"templates").mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory=str(BASE/"static")), name="static")
-templates = Jinja2Templates(directory=str(BASE/"templates"))
+(BASE / "static").mkdir(exist_ok=True)
+(BASE / "templates").mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
+templates = Jinja2Templates(directory=str(BASE / "templates"))
 
 # Include routers if available
 if WORKFORCE_ROUTER_AVAILABLE:
@@ -39,14 +40,17 @@ if WORKFORCE_ROUTER_AVAILABLE:
 USE_DATABASE = os.getenv("USE_DATABASE", "false").lower() == "true"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-print(f"🔧 Configuration:")
+print("🔧 Configuration:")
 print(f"   📊 Database Mode: {'Enabled' if USE_DATABASE else 'Disabled (Simple Mode)'}")
-print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features disabled)'}")
+print(
+    f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features disabled)'}"
+)
 
 if USE_DATABASE:
     # Import and setup database routers
     try:
         from routers import conversations, nextq, skills
+
         app.include_router(conversations.router, prefix="/api")
         app.include_router(nextq.router, prefix="/api")
         app.include_router(skills.router, prefix="/api")
@@ -62,13 +66,20 @@ if not USE_DATABASE:
     # Enhanced state management for simple mode
     STATE = {
         "messages": [],
-        "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
+        "process": {
+            "steps": [],
+            "actors": [],
+            "tools": [],
+            "decisions": [],
+            "inputs": [],
+            "outputs": [],
+        },
         "conversation_count": 0,
         "session_analytics": {
             "start_time": time.time(),
             "total_interactions": 0,
-            "process_complexity_score": 0
-        }
+            "process_complexity_score": 0,
+        },
     }
 
     def infer_tone(text: str) -> str:
@@ -77,8 +88,25 @@ if not USE_DATABASE:
             return "warm"
 
         t = text.lower()
-        negative_indicators = ["angry", "frustrated", "blocked", "confused", "tired", "annoyed", "overwhelmed"]
-        expert_indicators = ["sla", "throughput", "kpi", "slo", "sprint", "backlog", "okrs", "latency"]
+        negative_indicators = [
+            "angry",
+            "frustrated",
+            "blocked",
+            "confused",
+            "tired",
+            "annoyed",
+            "overwhelmed",
+        ]
+        expert_indicators = [
+            "sla",
+            "throughput",
+            "kpi",
+            "slo",
+            "sprint",
+            "backlog",
+            "okrs",
+            "latency",
+        ]
 
         is_negative = any(w in t for w in negative_indicators)
         is_expert = any(w in t for w in expert_indicators)
@@ -101,7 +129,7 @@ if not USE_DATABASE:
             "gentle": "I understand this can be challenging. Let's break it down step by step. ",
             "expert": "Got it - diving into the technical details. ",
             "direct": "Quick question: ",
-            "warm": "Thanks for sharing that! "
+            "warm": "Thanks for sharing that! ",
         }
 
         prefix = responses.get(tone, "")
@@ -118,12 +146,12 @@ if not USE_DATABASE:
 
         return prefix + question
 
-    def generate_smart_chips(text: str) -> List[str]:
+    def generate_smart_chips(text: str) -> list[str]:
         """
         Generate contextual suggestion chips based on the assistant's reply.
         """
         t = text.lower() if text else ""
-        chips: List[str] = []
+        chips: list[str] = []
 
         if any(word in t for word in ["step", "process", "workflow"]):
             chips.append("What is the next step?")
@@ -141,15 +169,22 @@ if not USE_DATABASE:
 
         return chips[:5]
 
-    def extract_process_elements(text: str) -> Dict[str, List[str]]:
+    def extract_process_elements(text: str) -> dict[str, list[str]]:
         """Extract process steps, actors, and tools from text"""
-        elements = {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
+        elements = {
+            "steps": [],
+            "actors": [],
+            "tools": [],
+            "decisions": [],
+            "inputs": [],
+            "outputs": [],
+        }
 
         # Extract steps (look for action words and sequences)
         step_patterns = [
             r"(?:then|next|after that)\s+([^.]+)",
             r"(\w+ing[^.]+)",
-            r"(create|submit|review|approve|send|validate|process|generate)\s+([^.]+)"
+            r"(create|submit|review|approve|send|validate|process|generate)\s+([^.]+)",
         ]
 
         for pattern in step_patterns:
@@ -164,7 +199,7 @@ if not USE_DATABASE:
         actor_patterns = [
             r"\b(manager|admin|user|team|department|analyst|developer|designer|reviewer)\b",
             r"\b([A-Z][a-z]+\s+[A-Z][a-z]+)\b",  # Names
-            r"\b(IT|HR|Finance|Sales|Marketing|Operations)\b"
+            r"\b(IT|HR|Finance|Sales|Marketing|Operations)\b",
         ]
 
         for pattern in actor_patterns:
@@ -177,7 +212,7 @@ if not USE_DATABASE:
         tool_patterns = [
             r"\b(system|platform|application|tool|software|database|CRM|ERP)\b",
             r"\b(Excel|Slack|Email|Jira|Salesforce|SharePoint|Teams)\b",
-            r"\b(\w+\.com|\w+\.io|\w+\.net)\b"
+            r"\b(\w+\.com|\w+\.io|\w+\.net)\b",
         ]
 
         for pattern in tool_patterns:
@@ -186,12 +221,14 @@ if not USE_DATABASE:
 
         # Remove duplicates and clean up
         for key in elements:
-            elements[key] = list(set([item.strip() for item in elements[key] if item.strip()]))
+            elements[key] = list(
+                set([item.strip() for item in elements[key] if item.strip()])
+            )
             elements[key] = elements[key][:10]  # Limit to 10 items per category
 
         return elements
 
-    def calculate_process_metrics() -> Dict:
+    def calculate_process_metrics() -> dict:
         """Calculate intelligent process metrics"""
         steps = STATE["process"]["steps"]
         actors = STATE["process"]["actors"]
@@ -202,7 +239,13 @@ if not USE_DATABASE:
 
         # Complexity calculation
         complexity_score = len(steps) + len(actors) * 1.5 + len(tools) * 0.5
-        complexity_level = "low" if complexity_score < 5 else "medium" if complexity_score < 15 else "high"
+        complexity_level = (
+            "low"
+            if complexity_score < 5
+            else "medium"
+            if complexity_score < 15
+            else "high"
+        )
 
         # Time estimation (hours)
         base_time_per_step = 0.5
@@ -226,7 +269,9 @@ if not USE_DATABASE:
             "complexity_score": complexity_score,
             "estimated_time": round(estimated_time, 1),
             "risk_score": risk_score,
-            "automation_potential": 100 - risk_score if "automated" in process_text else risk_score
+            "automation_potential": 100 - risk_score
+            if "automated" in process_text
+            else risk_score,
         }
 
     # API Endpoints for Simple Mode
@@ -234,11 +279,7 @@ if not USE_DATABASE:
     async def message_stream(content: str):
         """Handle chat messages with intelligent processing"""
         # Store user message
-        user_msg = {
-            "role": "user",
-            "content": content,
-            "created_at": time.time()
-        }
+        user_msg = {"role": "user", "content": content, "created_at": time.time()}
         STATE["messages"].append(user_msg)
         STATE["session_analytics"]["total_interactions"] += 1
 
@@ -253,7 +294,9 @@ if not USE_DATABASE:
 
         # Update complexity score
         metrics = calculate_process_metrics()
-        STATE["session_analytics"]["process_complexity_score"] = metrics["complexity_score"]
+        STATE["session_analytics"]["process_complexity_score"] = metrics[
+            "complexity_score"
+        ]
 
         # Generate adaptive response
         response_text = generate_adaptive_reply(content)
@@ -272,16 +315,20 @@ if not USE_DATABASE:
                 await asyncio.sleep(0.02)
 
             # Store assistant message
-            STATE["messages"].append({
-                "role": "assistant",
-                "content": response_text,
-                "created_at": time.time(),
-                "metadata": {
-                    "extracted_elements": len(extracted["steps"]) + len(extracted["actors"]) + len(extracted["tools"]),
-                    "complexity": metrics["complexity"],
-                    "confidence": 0.8
+            STATE["messages"].append(
+                {
+                    "role": "assistant",
+                    "content": response_text,
+                    "created_at": time.time(),
+                    "metadata": {
+                        "extracted_elements": len(extracted["steps"])
+                        + len(extracted["actors"])
+                        + len(extracted["tools"]),
+                        "complexity": metrics["complexity"],
+                        "confidence": 0.8,
+                    },
                 }
-            })
+            )
             yield "data: [DONE]\n\n"
 
         return StreamingResponse(generate_response(), media_type="text/event-stream")
@@ -292,14 +339,21 @@ if not USE_DATABASE:
         base_process = STATE["process"]
 
         if not any(base_process.values()):
-            return {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
+            return {
+                "steps": [],
+                "actors": [],
+                "tools": [],
+                "decisions": [],
+                "inputs": [],
+                "outputs": [],
+            }
 
         metrics = calculate_process_metrics()
 
         return {
             **base_process,
             "metrics": metrics,
-            "session_stats": STATE["session_analytics"]
+            "session_stats": STATE["session_analytics"],
         }
 
     @app.get("/api/conversations/1/followup")
@@ -309,7 +363,7 @@ if not USE_DATABASE:
             f"For {focus_text or 'that step'}, what's the input and who owns it?",
             f"What happens if {focus_text or 'this step'} fails or gets delayed?",
             f"How do you currently measure success for {focus_text or 'this process'}?",
-            f"What tools or systems support {focus_text or 'this activity'}?"
+            f"What tools or systems support {focus_text or 'this activity'}?",
         ]
 
         # Select question based on current process state
@@ -355,12 +409,18 @@ if not USE_DATABASE:
             # Scale affects risk
             final_risk = base_risk * max(1.0, scale * 0.8)
 
-            scores.append({
-                "index": i,
-                "step": step,
-                "risk": round(final_risk, 2),
-                "bottleneck_potential": "high" if base_risk > 1.5 else "medium" if base_risk > 1.0 else "low"
-            })
+            scores.append(
+                {
+                    "index": i,
+                    "step": step,
+                    "risk": round(final_risk, 2),
+                    "bottleneck_potential": "high"
+                    if base_risk > 1.5
+                    else "medium"
+                    if base_risk > 1.0
+                    else "low",
+                }
+            )
 
         return {
             "cycle_time_hours": cycle_time,
@@ -370,8 +430,10 @@ if not USE_DATABASE:
             "recommendations": [
                 "Consider automation for manual steps",
                 "Add parallel processing where possible",
-                "Implement monitoring for bottlenecks"
-            ] if metrics["risk_score"] > 50 else ["Process looks efficient!"]
+                "Implement monitoring for bottlenecks",
+            ]
+            if metrics["risk_score"] > 50
+            else ["Process looks efficient!"],
         }
 
     @app.post("/api/conversations/1/upload")
@@ -384,9 +446,11 @@ if not USE_DATABASE:
             extracted_elements = 0
 
             # Process text files
-            if file.filename.endswith(('.txt', '.md')):
+            if file.filename.endswith((".txt", ".md")):
                 try:
-                    content = data.decode('utf-8', errors='ignore')[:2000]  # First 2000 chars
+                    content = data.decode("utf-8", errors="ignore")[
+                        :2000
+                    ]  # First 2000 chars
                     extracted = extract_process_elements(content)
 
                     # Add to process
@@ -404,18 +468,18 @@ if not USE_DATABASE:
             if analysis_step not in STATE["process"]["steps"]:
                 STATE["process"]["steps"].append(analysis_step)
 
-            return JSONResponse({
-                "ok": True,
-                "file": file_info,
-                "extracted_elements": extracted_elements,
-                "message": f"Successfully processed {file.filename}"
-            })
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "file": file_info,
+                    "extracted_elements": extracted_elements,
+                    "message": f"Successfully processed {file.filename}",
+                }
+            )
 
         except Exception as e:
-            return JSONResponse(
-                {"ok": False, "error": str(e)},
-                status_code=500
-            )
+            return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
 
 # Common routes for both modes
 from datetime import datetime
@@ -466,6 +530,7 @@ async def chat(request: Request, message: str = Form("")):
         "casey.html", {"request": request, "messages": STATE["messages"]}
     )
 
+
 @app.get("/healthz")
 def health_check():
     """Health check endpoint"""
@@ -476,9 +541,10 @@ def health_check():
         "features": {
             "database": USE_DATABASE,
             "llm": bool(OPENAI_API_KEY),
-            "workforce_router": WORKFORCE_ROUTER_AVAILABLE
-        }
+            "workforce_router": WORKFORCE_ROUTER_AVAILABLE,
+        },
     }
+
 
 @app.get("/api/status")
 def get_status():
@@ -489,9 +555,18 @@ def get_status():
         "mode": "database" if USE_DATABASE else "simple",
         "database_available": USE_DATABASE,
         "llm_available": bool(OPENAI_API_KEY),
-        "message": "Database mode provides full functionality" if USE_DATABASE else "Simple mode for quick demo",
-        "uptime": round(time.time() - (STATE.get("session_analytics", {}).get("start_time", time.time())), 1) if not USE_DATABASE else 0
+        "message": "Database mode provides full functionality"
+        if USE_DATABASE
+        else "Simple mode for quick demo",
+        "uptime": round(
+            time.time()
+            - (STATE.get("session_analytics", {}).get("start_time", time.time())),
+            1,
+        )
+        if not USE_DATABASE
+        else 0,
     }
+
 
 # Additional helpful endpoints
 @app.get("/api/conversations/1/messages")
@@ -502,17 +577,27 @@ def get_messages():
     else:
         return {"messages": STATE["messages"]}
 
+
 @app.get("/api/conversations/1/reset")
 def reset_conversation():
     """Reset conversation state"""
     if not USE_DATABASE:
         STATE["messages"].clear()
-        STATE["process"] = {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
+        STATE["process"] = {
+            "steps": [],
+            "actors": [],
+            "tools": [],
+            "decisions": [],
+            "inputs": [],
+            "outputs": [],
+        }
         STATE["session_analytics"]["total_interactions"] = 0
         STATE["session_analytics"]["start_time"] = time.time()
 
     return {"ok": True, "message": "Conversation reset successfully"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
