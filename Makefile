@@ -7,7 +7,7 @@ DEV_FRONTEND=apps/frontend
 	poetry install >/dev/null 2>&1 || true
 
 dev:
-        pnpm -C $(DEV_FRONTEND) dev
+	pnpm -C $(DEV_FRONTEND) dev
 
 fmt:
 	pre-commit run --all-files
