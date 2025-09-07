@@ -10,6 +10,7 @@ An interactive process-extraction MVP with:
 - **Export** SVG/PNG
 - **Snapshot diffs**
 - **Actor-level** SLA & capacity controls
+- **Deadlines & dependencies** with Look-Ahead (anticipated needs) and Look-Back (recent changes) so you don't re-explain
 - **Discovery Mode** chips + **Ask next best question**
 - **Polished UI**: command palette, toasts, tour, tooltips, friendly empty states
 
