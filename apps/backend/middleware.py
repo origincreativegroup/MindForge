@@ -16,12 +16,9 @@ class AssetAccessMiddleware(BaseHTTPMiddleware):
             segments = path.strip("/").split("/")
             if len(segments) >= 2 and segments[1].isdigit():
                 asset_id = int(segments[1])
-                db = SessionLocal()
-                try:
+                with SessionLocal() as db:
                     asset = db.query(Asset).filter(Asset.id == asset_id).first()
                     whitelist = [w.account_email for w in asset.whitelist_entries] if asset else []
-                finally:
-                    db.close()
                 if not asset:
                     return JSONResponse({"detail": "Asset not found"}, status_code=404)
                 if asset.expires_at and asset.expires_at < datetime.utcnow():
