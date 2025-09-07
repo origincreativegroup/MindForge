@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse, HTMLResponse
@@ -67,8 +67,13 @@ def send_message(conversation_id: int, payload: schemas.ChatTurn, db: Session = 
     db.add(am); db.commit()
     return {"assistant": question, "emotion": emo, "extraction_snapshot": extraction}
 
-@router.post("/conversations/{conversation_id}/message_stream")
-def send_message_stream(conversation_id: int, content: str = Form(...), persona: str = Form("default"), db: Session = Depends(get_db)):
+@router.get("/conversations/{conversation_id}/message_stream")
+def send_message_stream(
+    conversation_id: int,
+    content: str,
+    persona: str = "default",
+    db: Session = Depends(get_db),
+):
     conv = db.query(models.Conversation).get(conversation_id)
     if not conv: raise HTTPException(404, "Conversation not found")
     emo = score_emotion(content)
@@ -98,12 +103,13 @@ def send_message_stream(conversation_id: int, content: str = Form(...), persona:
         full = []
         for chunk in chat_stream(messages, temperature=0.2):
             full.append(chunk)
-            yield chunk
+            yield f"data: {chunk}\n\n"
         final = "".join(full).strip() or "Walk me through the very next step and who does it."
         am = models.Message(conversation_id=conversation_id, role="assistant", content=final)
         db.add(am); db.commit()
+        yield "data: [DONE]\n\n"
 
-    return StreamingResponse(gen(), media_type="text/plain")
+    return StreamingResponse(gen(), media_type="text/event-stream")
 
 @router.post("/conversations/{conversation_id}/upload")
 async def upload(conversation_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
