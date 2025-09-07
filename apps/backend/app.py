@@ -5,15 +5,14 @@ import re
 import random
 from pathlib import Path
 from typing import Dict, List
-from fastapi import FastAPI, Request, UploadFile, File
+from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from .middleware import AssetAccessMiddleware
 
-# Fix: Use absolute imports instead of relative imports
 try:
-    from routers import workforce
+    from .routers import workforce
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")
@@ -43,6 +42,19 @@ print(f"🔧 Configuration:")
 print(f"   📊 Database Mode: {'Enabled' if USE_DATABASE else 'Disabled (Simple Mode)'}")
 print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features disabled)'}")
 
+# Global state for simple mode; initialized even in database mode so
+# routes referencing STATE don't fail during import when USE_DATABASE is true.
+STATE = {
+    "messages": [],
+    "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
+    "conversation_count": 0,
+    "session_analytics": {
+        "start_time": time.time(),
+        "total_interactions": 0,
+        "process_complexity_score": 0,
+    },
+}
+
 if USE_DATABASE:
     # Import and setup database routers
     try:
@@ -58,18 +70,6 @@ if USE_DATABASE:
 
 if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
-
-    # Enhanced state management for simple mode
-    STATE = {
-        "messages": [],
-        "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
-        "conversation_count": 0,
-        "session_analytics": {
-            "start_time": time.time(),
-            "total_interactions": 0,
-            "process_complexity_score": 0
-        }
-    }
 
     def infer_tone(text: str) -> str:
         """Analyze text tone for adaptive responses"""
@@ -418,7 +418,7 @@ if not USE_DATABASE:
             )
 
 # Common routes for both modes
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -439,7 +439,7 @@ async def chat(request: Request, message: str = Form("")):
             {
                 "role": "user",
                 "html": text,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+                "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
             }
         )
 
@@ -453,12 +453,13 @@ async def chat(request: Request, message: str = Form("")):
         for m in STATE["messages"]:
             m.pop("chips", None)
 
+        chips = generate_smart_chips(reply) if "generate_smart_chips" in globals() else []
         STATE["messages"].append(
             {
                 "role": "assistant",
                 "html": reply,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-                "chips": generate_smart_chips(reply),
+                "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+                "chips": chips,
             }
         )
 
