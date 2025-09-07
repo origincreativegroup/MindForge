@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Generator, Optional
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 BASE_URL = os.getenv("OPENAI_BASE_URL", "").rstrip("/")
 TIMEOUT = float(os.getenv("LLM_REQUEST_TIMEOUT", "45"))
-MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+MODEL = os.getenv("LLM_MODEL", "gpt-5.1")
 TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.2"))
 
 OPENAI_URL = f"{BASE_URL or 'https://api.openai.com'}/v1/chat/completions"
