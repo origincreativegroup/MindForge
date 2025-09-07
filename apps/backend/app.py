@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from .middleware import AssetAccessMiddleware
 
 # Fix: Use absolute imports instead of relative imports
 try:
@@ -22,6 +23,7 @@ BASE = Path(__file__).parent
 
 # Initialize FastAPI app
 app = FastAPI(title="Casey · MindForge", debug=True)
+app.add_middleware(AssetAccessMiddleware)
 
 # Setup static files and templates
 (BASE/"static").mkdir(exist_ok=True)
@@ -44,9 +46,10 @@ print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features di
 if USE_DATABASE:
     # Import and setup database routers
     try:
-        from routers import conversations, nextq
+        from routers import conversations, nextq, skills
         app.include_router(conversations.router, prefix="/api")
         app.include_router(nextq.router, prefix="/api")
+        app.include_router(skills.router, prefix="/api")
         print("✅ Database mode enabled - full functionality available")
     except ImportError as e:
         print(f"⚠️  Database imports failed: {e}")
