@@ -348,6 +348,7 @@ class CreativeProject(Base):
     name = Column(String, nullable=False, index=True)
     project_type = Column(Enum(ProjectType), nullable=False)
     description = Column(Text, nullable=True)
+    status = Column(String, nullable=True, default="draft")
     original_filename = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
     file_size = Column(Integer, nullable=False)
@@ -362,6 +363,7 @@ class CreativeProject(Base):
     questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
     files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
     insights = relationship("ProjectInsight", back_populates="project", cascade="all, delete-orphan")
+    comments = relationship("ProjectComment", back_populates="project", cascade="all, delete-orphan")
 
 
 class ProjectQuestion(Base):
@@ -404,7 +406,22 @@ class ProjectInsight(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
     confidence = Column(Integer, nullable=False)  # 0-100
+    score = Column(Integer, nullable=True)  # Additional score field for compatibility
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     project = relationship("CreativeProject", back_populates="insights")
+
+
+class ProjectComment(Base):
+    __tablename__ = "project_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    comment_type = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    is_resolved = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="comments")
