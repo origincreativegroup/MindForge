@@ -7,8 +7,6 @@ from .. import models, schemas
 from ..services.scoring import score_emotion
 from ..services.extractor import extract_process
 from ..services.interviewer import next_questions
-from ..services.llm_client import chat_stream
-from ..services.memory import summarize_context, window_messages
 from ..services.mirror import mirror_understanding
 from ..services.uploads import parse_uploaded
 from ..services.simulate import simulate
@@ -61,8 +59,8 @@ def send_message(conversation_id: int, payload: schemas.ChatTurn, db: Session = 
     extraction = extract_process(user_texts)
     pm = models.ProcessMap(conversation_id=conversation_id, **extraction)
     db.add(pm); db.commit()
-    history = [m.content for m in conv.messages]
-    question = next_questions(history)[0]
+    history = [m.content for m in conv.messages] + [payload.user_text]
+    question = next_questions(history, str(conversation_id))[0]
     am = models.Message(conversation_id=conversation_id, role="assistant", content=question)
     db.add(am); db.commit()
     return {"assistant": question, "emotion": emo, "extraction_snapshot": extraction}
@@ -71,7 +69,6 @@ def send_message(conversation_id: int, payload: schemas.ChatTurn, db: Session = 
 def send_message_stream(
     conversation_id: int,
     content: str,
-    persona: str = "default",
     db: Session = Depends(get_db),
 ):
     conv = db.query(models.Conversation).get(conversation_id)
@@ -85,27 +82,12 @@ def send_message_stream(
     pm = models.ProcessMap(conversation_id=conversation_id, **extraction)
     db.add(pm); db.commit()
 
-    history_plain = summarize_context([m.content for m in conv.messages], max_len=2000)
-    persona_note = {
-        "default": "friendly teammate",
-        "auditor": "auditor seeking controls and evidence",
-        "new_hire": "new hire asking why",
-        "executive": "executive focused on KPIs and outcomes",
-    }.get(persona, "friendly teammate")
-
-    messages = [
-        {"role": "system", "content": f"You are Casey, an interviewing assistant. Adopt a {persona_note} persona. Ask ONE next best question to map the process."},
-        {"role": "user",   "content": f"Conversation so far:\n{history_plain}\n\nNow ask exactly ONE next question. Output just the question."},
-    ]
-    messages = window_messages(messages, max_chars=6000)
+    history = [m.content for m in conv.messages] + [content]
+    question = next_questions(history, str(conversation_id))[0]
 
     def gen():
-        full = []
-        for chunk in chat_stream(messages, temperature=0.2):
-            full.append(chunk)
-            yield f"data: {chunk}\n\n"
-        final = "".join(full).strip() or "Walk me through the very next step and who does it."
-        am = models.Message(conversation_id=conversation_id, role="assistant", content=final)
+        yield f"data: {question}\n\n"
+        am = models.Message(conversation_id=conversation_id, role="assistant", content=question)
         db.add(am); db.commit()
         yield "data: [DONE]\n\n"
 
