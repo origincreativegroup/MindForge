@@ -3,7 +3,7 @@ import json
 import httpx
 from typing import List, Dict, Any, Generator, Optional
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
 BASE_URL = os.getenv("OPENAI_BASE_URL", "").rstrip("/")
 TIMEOUT = float(os.getenv("LLM_REQUEST_TIMEOUT", "45"))
 MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
