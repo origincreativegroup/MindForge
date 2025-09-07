@@ -77,6 +77,20 @@ class ProjectStatus(PyEnum):
     archived = "archived"
 
 
+class ProjectType(PyEnum):
+    """Types of creative projects."""
+
+    WEBSITE_MOCKUP = "website_mockup"
+    SOCIAL_MEDIA = "social_media"
+    PRINT_GRAPHIC = "print_graphic"
+    BRANDING = "branding"
+    VIDEO_PRODUCTION = "video_production"
+    MOBILE_APP = "mobile_app"
+    ILLUSTRATION = "illustration"
+    PHOTOGRAPHY = "photography"
+    OTHER = "other"
+
+
 class AssetType(PyEnum):
     """Supported media types."""
 
@@ -146,11 +160,17 @@ class Project(Base):
     title = Column(String, nullable=False, index=True)
     short_tagline = Column(String, nullable=True)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.pitch, nullable=False)
+    project_type = Column(Enum(ProjectType), default=ProjectType.OTHER, nullable=True)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     disciplines = Column(JSON, default=list)
     hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
+    # Creative analysis fields
+    color_palette = Column(JSON, nullable=True)
+    dimensions = Column(JSON, nullable=True)
+    extracted_text = Column(Text, nullable=True)
+    file_path = Column(String, nullable=True)
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])

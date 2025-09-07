@@ -74,6 +74,18 @@ class ProjectStatus(str, Enum):
     archived = "archived"
 
 
+class ProjectType(str, Enum):
+    WEBSITE_MOCKUP = "website_mockup"
+    SOCIAL_MEDIA = "social_media"
+    PRINT_GRAPHIC = "print_graphic"
+    BRANDING = "branding"
+    VIDEO_PRODUCTION = "video_production"
+    MOBILE_APP = "mobile_app"
+    ILLUSTRATION = "illustration"
+    PHOTOGRAPHY = "photography"
+    OTHER = "other"
+
+
 class AssetType(str, Enum):
     image = "image"
     video = "video"
@@ -105,6 +117,7 @@ class ProjectCreate(BaseModel):
     title: str
     short_tagline: Optional[str] = None
     status: ProjectStatus = ProjectStatus.pitch
+    project_type: Optional[ProjectType] = ProjectType.OTHER
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     client_id: Optional[int] = None
@@ -114,6 +127,11 @@ class ProjectCreate(BaseModel):
     tag_ids: List[int] = []
     collection_ids: List[int] = []
     hero_asset_id: Optional[int] = None
+    # Creative analysis fields
+    color_palette: Optional[List[str]] = None
+    dimensions: Optional[Dict[str, int]] = None
+    extracted_text: Optional[str] = None
+    file_path: Optional[str] = None
 
 
 class ProjectOut(ProjectCreate):
