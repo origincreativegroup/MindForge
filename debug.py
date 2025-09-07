@@ -24,8 +24,7 @@ def check_file_structure():
     """Check if required files exist."""
     base = Path(__file__).parent
     required_files = [
-        "backend/app.py",
-        "backend/requirements.txt",
+        "apps/backend/app.py",
         "run.sh",
         "README.md"
     ]
@@ -71,7 +70,7 @@ def check_dependencies():
 
     if missing_required:
         print(f"❌ Missing required packages: {missing_required}")
-        print("Run: pip install -r backend/requirements.txt")
+        print("Run: poetry install")
         return False
 
     print("✅ Required dependencies OK")
@@ -86,7 +85,7 @@ def check_database_setup():
     """Check database configuration."""
     try:
         # Try to import database modules
-        sys.path.append(str(Path(__file__).parent / "backend"))
+        sys.path.append(str(Path(__file__).parent / "apps"))
 
         try:
             from backend.models import Base, Conversation, Message, ProcessMap
@@ -145,7 +144,7 @@ def check_ports():
 def run_basic_import_test():
     """Test basic imports."""
     try:
-        sys.path.append(str(Path(__file__).parent / "backend"))
+        sys.path.append(str(Path(__file__).parent / "apps"))
         from backend.app import app
         print("✅ App imports successfully")
         return True
@@ -156,9 +155,9 @@ def run_basic_import_test():
 def suggest_fixes():
     """Suggest common fixes."""
     print("\n🔧 Common fixes:")
-    print("1. Install dependencies: cd backend && pip install -r requirements.txt")
-    print("2. Run in simple mode: USE_DATABASE=false python -m uvicorn app:app --reload")
-    print("3. Enable database mode: USE_DATABASE=true python -m uvicorn app:app --reload")
+    print("1. Install dependencies: poetry install")
+    print("2. Run in simple mode: USE_DATABASE=false poetry run uvicorn apps.backend.app:app --reload")
+    print("3. Enable database mode: USE_DATABASE=true poetry run uvicorn apps.backend.app:app --reload")
     print("4. Check logs for detailed errors")
     print("5. Ensure you're in a virtual environment")
 
@@ -193,7 +192,7 @@ def main():
 
     if passed == total:
         print("🎉 All checks passed! You should be able to run the application.")
-        print("Try: ./run.sh or cd backend && python -m uvicorn app:app --reload")
+        print("Try: ./run.sh or poetry run uvicorn apps.backend.app:app --reload")
     else:
         print(f"⚠️  {passed}/{total} checks passed. See issues above.")
         suggest_fixes()

@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "mindforge"
+version = "0.1.0"
+description = "MindForge monorepo"
+authors = ["MindForge Contributors"]
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.30.6"}
+jinja2 = "^3.1.4"
+python-multipart = "^0.0.9"
+pydantic = "^1.10.17"
+SQLAlchemy = "^2.0.35"
+itsdangerous = "^2.2.0"
+httpx = "^0.27.2"
+orjson = "^3.9.15"
+pypdf = "^4.0.1"
+python-dotenv = "^1.0.0"
+langchain = "^0.1.17"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
