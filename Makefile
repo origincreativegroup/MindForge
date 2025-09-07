@@ -10,14 +10,13 @@ dev:
 	pnpm -C $(DEV_FRONTEND) dev
 
 test:
-	pytest -q
+	poetry run pytest -q
 
 lint:
-	ruff check apps packages
-	pnpm -C $(DEV_FRONTEND) lint
+	poetry run ruff check apps packages
 
 typecheck:
-	mypy $(DEV_BACKEND)
+	poetry run mypy $(DEV_BACKEND)
 
 build:
 	pnpm -C $(DEV_FRONTEND) build
