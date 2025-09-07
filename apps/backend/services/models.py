@@ -327,7 +327,7 @@ class LearningGoal(Base):
 
 
 # ---------------------------------------------------------------------------
-# Creative project models for the creative projects router
+# Enhanced Creative project models for comprehensive project management
 # ---------------------------------------------------------------------------
 
 class ProjectType(PyEnum):
@@ -339,6 +339,73 @@ class ProjectType(PyEnum):
     logo_design = "logo_design"
     ui_design = "ui_design"
     branding = "branding"
+
+
+class CommentType(PyEnum):
+    """Types of comments that can be added to projects."""
+    
+    general = "general"
+    feedback = "feedback"
+    approval = "approval"
+    revision = "revision"
+    question = "question"
+
+
+class UserRole(PyEnum):
+    """User roles for team management."""
+    
+    admin = "admin"
+    creative_director = "creative_director"
+    designer = "designer"
+    client = "client"
+    viewer = "viewer"
+
+
+class AnalyticsEventType(PyEnum):
+    """Types of analytics events to track."""
+    
+    project_created = "project_created"
+    project_uploaded = "project_uploaded"
+    comment_added = "comment_added"
+    analysis_run = "analysis_run"
+    report_generated = "report_generated"
+    user_session = "user_session"
+    collaboration_event = "collaboration_event"
+
+
+# User and team management models
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    full_name = Column(String, nullable=True)
+    role = Column(Enum(UserRole), default=UserRole.designer, nullable=False)
+    avatar_url = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_active = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    projects = relationship("CreativeProject", back_populates="created_by")
+    comments = relationship("ProjectComment", back_populates="user")
+    analytics_events = relationship("AnalyticsEvent", back_populates="user")
+
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(Enum(UserRole), nullable=False)
+    permissions = Column(JSON, nullable=True)  # Custom permissions per project
+    added_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="team_members")
+    user = relationship("User")
 
 
 class CreativeProject(Base):
@@ -356,12 +423,62 @@ class CreativeProject(Base):
     color_palette = Column(JSON, nullable=True)
     extracted_text = Column(Text, nullable=True)
     tags = Column(JSON, nullable=True)
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Project metadata
+    status = Column(String, default="draft", nullable=False)  # draft, in_review, approved, completed
+    priority = Column(String, default="medium", nullable=False)  # low, medium, high, urgent
+    deadline = Column(DateTime(timezone=True), nullable=True)
+    client_info = Column(JSON, nullable=True)
+    brand_guidelines = Column(JSON, nullable=True)
+    
+    # Analysis results
+    accessibility_score = Column(Integer, nullable=True)  # 0-100
+    design_quality_score = Column(Integer, nullable=True)  # 0-100
+    trend_alignment_score = Column(Integer, nullable=True)  # 0-100
+    
     # Relationships
+    created_by = relationship("User", back_populates="projects")
+    team_members = relationship("TeamMember", back_populates="project", cascade="all, delete-orphan")
     questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
     files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
     insights = relationship("ProjectInsight", back_populates="project", cascade="all, delete-orphan")
+    comments = relationship("ProjectComment", back_populates="project", cascade="all, delete-orphan")
+    analytics_events = relationship("AnalyticsEvent", back_populates="project", cascade="all, delete-orphan")
+    reports = relationship("ProjectReport", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectComment(Base):
+    __tablename__ = "project_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    comment_type = Column(Enum(CommentType), default=CommentType.general, nullable=False)
+    
+    # Position and context for design feedback
+    metadata = Column(JSON, nullable=True)  # coordinates, element_id, etc.
+    
+    # Comment thread support
+    parent_comment_id = Column(Integer, ForeignKey("project_comments.id"), nullable=True)
+    
+    # Status tracking
+    is_resolved = Column(Boolean, default=False, nullable=False)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    resolved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="comments")
+    user = relationship("User", back_populates="comments")
+    resolved_by = relationship("User", foreign_keys=[resolved_by_id])
+    parent_comment = relationship("ProjectComment", remote_side=[id])
+    replies = relationship("ProjectComment", back_populates="parent_comment")
 
 
 class ProjectQuestion(Base):
@@ -374,10 +491,12 @@ class ProjectQuestion(Base):
     is_answered = Column(Boolean, default=False, nullable=False)
     answer = Column(Text, nullable=True)
     answered_at = Column(DateTime(timezone=True), nullable=True)
+    answered_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     project = relationship("CreativeProject", back_populates="questions")
+    answered_by = relationship("User")
 
 
 class ProjectFile(Base):
@@ -389,10 +508,14 @@ class ProjectFile(Base):
     file_path = Column(String, nullable=False)
     file_type = Column(String, nullable=False)
     file_size = Column(Integer, nullable=False)
+    version = Column(Integer, default=1, nullable=False)
+    is_current_version = Column(Boolean, default=True, nullable=False)
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     project = relationship("CreativeProject", back_populates="files")
+    uploaded_by = relationship("User")
 
 
 class ProjectInsight(Base):
@@ -404,7 +527,54 @@ class ProjectInsight(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)
     confidence = Column(Integer, nullable=False)  # 0-100
+    actionable = Column(Boolean, default=True, nullable=False)
+    priority = Column(String, default="medium", nullable=False)  # low, medium, high
+    metadata = Column(JSON, nullable=True)  # Additional data for the insight
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     project = relationship("CreativeProject", back_populates="insights")
+
+
+class AnalyticsEvent(Base):
+    __tablename__ = "analytics_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_type = Column(Enum(AnalyticsEventType), nullable=False)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    # Event data
+    event_data = Column(JSON, nullable=True)
+    session_id = Column(String, nullable=True)
+    ip_address = Column(String, nullable=True)
+    user_agent = Column(String, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    duration = Column(Integer, nullable=True)  # For session events
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="analytics_events")
+    user = relationship("User", back_populates="analytics_events")
+
+
+class ProjectReport(Base):
+    __tablename__ = "project_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    report_type = Column(String, nullable=False)  # pdf, html, json, csv
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    
+    # Report metadata
+    generated_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    report_config = Column(JSON, nullable=True)  # Configuration used to generate report
+    generated_at = Column(DateTime(timezone=True), server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="reports")
+    generated_by = relationship("User")
