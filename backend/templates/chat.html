@@ -1,128 +1,397 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+.tabs {
+  display: flex;
+  background: var(--panel);
+  border-radius: 12px 12px 0 0;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  overflow: hidden;
+}
+.tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--sub);
+  border: none;
+  transition: all 0.2s;
+}
+.tab.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.tab:hover:not(.active) {
+  background: rgba(96, 165, 250, 0.1);
+  color: var(--ink);
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.chat-focused {
+  grid-template-columns: 1fr;
+}
+.layout.show-graph {
+  grid-template-columns: 1fr 0.8fr;
+}
+</style>
+
 <h1>Chat · #{{ conv.id }}</h1>
 
-<div class="layout">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('chat')">💬 Chat with Casey</button>
+  <button class="tab" onclick="switchTab('graph')">📊 Process Graph</button>
+  <button class="tab" onclick="switchTab('both')">🔄 Split View</button>
+</div>
+
+<div id="main-layout" class="layout">
+  <!-- Chat Panel - Always Visible -->
   <div class="panel">
     <div id="chat" class="chat">
       {% if conv.messages|length == 0 %}
-      <div class="empty">Describe how work happens. “Customer emails → Support triages → Eng fixes → Finance bills”.</div>
+      <div class="empty">
+        👋 Hi! I'm Casey, your process mapping assistant.<br>
+        Tell me about any work process and I'll help you visualize it.<br><br>
+        Try: "Customer emails → Support triages → Engineering fixes → Finance bills"
+      </div>
       {% endif %}
       {% for m in conv.messages %}
-      <div class="msg {{ m.role }}"><div class="bubble">{{ m.content }}</div></div>
+      <div class="msg {{ m.role }}">
+        <div class="bubble">{{ m.content }}</div>
+      </div>
       {% endfor %}
     </div>
 
-    <form id="composer" class="row" onsubmit="sendMsg(event)">
-      <textarea id="content" rows="3" class="input" placeholder="Type a process in your own words…"></textarea>
-      <button class="btn" type="submit">Send</button>
+    <form id="composer" onsubmit="sendMsg(event)">
+      <div class="row">
+        <textarea
+          id="content"
+          rows="3"
+          class="input"
+          placeholder="Describe how work happens in your own words..."
+          onkeydown="handleKeyPress(event)"
+        ></textarea>
+        <button class="btn" type="submit">Send</button>
+      </div>
     </form>
 
     <div class="row" style="margin-top:8px">
-      <form id="uploadForm" class="row" enctype="multipart/form-data" onsubmit="doUpload(event)">
-        <input type="file" name="file" id="fileInput" />
+      <form id="uploadForm" enctype="multipart/form-data" onsubmit="doUpload(event)">
+        <input type="file" name="file" id="fileInput" accept=".pdf,.csv,.txt,.doc,.docx" />
         <button class="btn" type="submit">Upload</button>
-        <small class="small" id="uploadInfo"></small>
+        <small class="small" id="uploadInfo">Upload process documents for analysis</small>
       </form>
     </div>
   </div>
 
-  <div class="panel">
+  <!-- Process Graph Panel - Toggleable -->
+  <div id="graph-panel" class="panel tab-content" style="display: none;">
     <div class="row" style="justify-content:space-between;align-items:center;">
       <h2>Live Process Graph</h2>
       <div class="row">
         <label class="small">Scale</label>
         <input type="range" id="simSlider" min="1" max="3" step="0.1" value="1.5" />
         <button class="btn" id="simulateBtn">Simulate</button>
+        <button class="btn" onclick="exportGraph()">Export</button>
       </div>
     </div>
     <div id="mermaidContainer" class="mermaid-card">
-      <pre id="mermaid" class="mermaid">flowchart LR
-A[Start]-->B[Describe a task]</pre>
+      <pre id="mermaid" class="mermaid">
+graph TD
+    A[👋 Start here] --> B[Describe your process]
+    B --> C[Casey will visualize it]
+    C --> D[🎉 Process mapped!]
+      </pre>
     </div>
     <div class="legend" style="margin-top:6px">
-      <span class="pill">Step</span><span class="pill">Decision</span><span class="pill">Actor</span><span class="pill">Tool</span>
+      <span class="pill step">Step</span>
+      <span class="pill decision">Decision</span>
+      <span class="pill actor">Actor</span>
+      <span class="pill tool">Tool</span>
       <span class="small" id="cycleTime">Predicted cycle time: — h</span>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });</script>
-
 <script>
-async function sendMsg(e){
-  e.preventDefault();
+// Initialize Mermaid
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  securityLevel: 'loose',
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true
+  }
+});
+
+// Tab switching functionality
+function switchTab(tab) {
+  const layout = document.getElementById('main-layout');
+  const graphPanel = document.getElementById('graph-panel');
+  const tabs = document.querySelectorAll('.tab');
+
+  // Remove active class from all tabs
+  tabs.forEach(t => t.classList.remove('active'));
+
+  // Add active class to clicked tab
+  event.target.classList.add('active');
+
+  switch(tab) {
+    case 'chat':
+      layout.className = 'layout chat-focused';
+      graphPanel.style.display = 'none';
+      break;
+    case 'graph':
+      layout.className = 'layout show-graph';
+      graphPanel.style.display = 'block';
+      setTimeout(() => refreshDiagram(), 100); // Refresh after showing
+      break;
+    case 'both':
+      layout.className = 'layout show-graph';
+      graphPanel.style.display = 'block';
+      setTimeout(() => refreshDiagram(), 100);
+      break;
+  }
+}
+
+// Handle Enter key in textarea
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMsg(event);
+  }
+}
+
+// Send message function
+async function sendMsg(event) {
+  if (event) event.preventDefault();
+
   const box = document.getElementById('content');
   const btn = document.querySelector('#composer button');
-  const text = box.value.trim(); if(!text) return;
-  addMsg('user', text); box.value='';
-  box.disabled = true; btn.disabled = true;
-  const fd = new FormData(); fd.append('content', text);
-  try{
-    const resp = await fetch('/api/conversations/1/message_stream', { method:'POST', body: fd });
-    if (!resp.ok || !resp.body){ addMsg('assistant', '(stream error)'); return; }
-    const reader = resp.body.getReader(); const dec = new TextDecoder('utf-8'); let agg='';
-    const bubble = addMsg('assistant', '…');
-    while(true){
-      const {value, done} = await reader.read();
-      if(done) break;
-      const chunk = dec.decode(value, {stream:true});
-      agg += chunk;
-      bubble.textContent = agg;
+  const text = box.value.trim();
+
+  if (!text) return;
+
+  // Add user message immediately
+  addMsg('user', text);
+  box.value = '';
+
+  // Disable input during processing
+  box.disabled = true;
+  btn.disabled = true;
+  btn.textContent = 'Thinking...';
+
+  // Prepare form data
+  const formData = new FormData();
+  formData.append('content', text);
+
+  try {
+    const response = await fetch('/api/conversations/1/message_stream', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    if (!response.body) {
+      addMsg('assistant', 'Sorry, I had trouble processing that. Could you try again?');
+      return;
+    }
+
+    // Handle streaming response
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let assistantText = '';
+    const assistantBubble = addMsg('assistant', '💭 Thinking...');
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      assistantText += chunk;
+      assistantBubble.textContent = assistantText;
+    }
+
+    // Refresh the process graph if it's visible
+    setTimeout(() => {
+      if (document.getElementById('graph-panel').style.display !== 'none') {
+        refreshDiagram();
+      }
+    }, 500);
+
+  } catch (error) {
+    console.error('Error sending message:', error);
+    addMsg('assistant', 'Sorry, I encountered an error. Please check your connection and try again.');
   } finally {
-    box.disabled = false; btn.disabled = false;
+    // Re-enable input
+    box.disabled = false;
+    btn.disabled = false;
+    btn.textContent = 'Send';
+    box.focus();
   }
-  await refreshDiagram();
 }
-function addMsg(role, text){
+
+// Add message to chat
+function addMsg(role, text) {
   const chat = document.getElementById('chat');
-  const div = document.createElement('div'); div.className = 'msg ' + role;
-  div.innerHTML = `<div class="bubble"></div>`;
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = '<div class="bubble"></div>';
   const bubble = div.querySelector('.bubble');
   bubble.textContent = text;
-  chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
   return bubble;
 }
 
-async function doUpload(e){
-  e.preventDefault();
-  const f = document.getElementById('fileInput').files[0]; if(!f) return;
-  const fd = new FormData(); fd.append('file', f);
-  const r = await fetch('/api/conversations/1/upload', { method:'POST', body: fd });
-  const j = await r.json().catch(()=>({}));
-  document.getElementById('uploadInfo').textContent = j.ok ? `Uploaded ${j.file.filename} (${j.file.size} bytes)` : 'Upload failed';
-  await refreshDiagram();
+// File upload function
+async function doUpload(event) {
+  event.preventDefault();
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  document.getElementById('uploadInfo').textContent = 'Uploading...';
+
+  try {
+    const response = await fetch('/api/conversations/1/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      document.getElementById('uploadInfo').textContent = `Uploaded ${file.name} (${file.size} bytes)`;
+      addMsg('user', `📎 Uploaded: ${file.name}`);
+
+      // Auto-refresh graph after upload
+      setTimeout(() => refreshDiagram(), 1000);
+    } else {
+      document.getElementById('uploadInfo').textContent = 'Upload failed';
+    }
+  } catch (error) {
+    console.error('Upload error:', error);
+    document.getElementById('uploadInfo').textContent = 'Upload error';
+  }
+
+  fileInput.value = ''; // Clear file input
 }
 
-document.getElementById('simulateBtn').addEventListener('click', async ()=>{
+// Simulation button handler
+document.getElementById('simulateBtn').addEventListener('click', async () => {
   await refreshDiagram();
 });
 
-async function refreshDiagram(){
-  const [pRes, sRes] = await Promise.all([
-    fetch('/api/conversations/1/latest_process'),
-    fetch('/api/conversations/1/simulate?scale=' + encodeURIComponent(document.getElementById('simSlider').value))
-  ]);
-  const p = await pRes.json(); const sim = await sRes.json();
-  document.getElementById('cycleTime').textContent = 'Predicted cycle time: ' + (sim.cycle_time_hours?.toFixed ? sim.cycle_time_hours.toFixed(1) : sim.cycle_time_hours) + ' h';
-  const code = buildMermaid(p, sim);
-  const target = document.getElementById('mermaid');
-  target.textContent = code;
-  mermaid.run({nodes:[target]});
+// Refresh diagram function
+async function refreshDiagram() {
+  try {
+    const [processRes, simRes] = await Promise.all([
+      fetch('/api/conversations/1/latest_process'),
+      fetch('/api/conversations/1/simulate?scale=' + encodeURIComponent(document.getElementById('simSlider').value))
+    ]);
+
+    const processData = await processRes.json();
+    const simData = await simRes.json();
+
+    // Update cycle time
+    const cycleTime = simData.cycle_time_hours || 0;
+    document.getElementById('cycleTime').textContent = `Predicted cycle time: ${cycleTime.toFixed ? cycleTime.toFixed(1) : cycleTime} h`;
+
+    // Generate Mermaid diagram
+    const mermaidCode = buildMermaidDiagram(processData, simData);
+    const target = document.getElementById('mermaid');
+    target.textContent = mermaidCode;
+
+    // Render with Mermaid
+    await mermaid.run({ nodes: [target] });
+
+  } catch (error) {
+    console.error('Error refreshing diagram:', error);
+    document.getElementById('mermaid').textContent = 'graph TD\n    A[Error loading diagram] --> B[Please try again]';
+  }
 }
 
-function buildMermaid(p, sim){
-  const steps = Array.isArray(p.steps)? p.steps : [];
-  if (!steps.length) return "flowchart LR\\nA[Start]-->B[Describe a task]";
-  const lines = ["flowchart TD",
-    "classDef step fill:#0ea5e9,stroke:#67e8f9,stroke-width:1px,color:#06223a;",
-    "classDef clickable stroke-dasharray: 3 2;"];
-  let prev=null; steps.forEach((s,i)=>{ const id='S'+(i+1); lines.push(`${id}["${i+1}. ${s.replace(/"/g,'\\"')}"]:::step clickable`); if(prev) lines.push(`${prev}-->${id}`); prev=id; });
-  return lines.join("\\n");
+// Build Mermaid diagram with proper syntax
+function buildMermaidDiagram(processData, simData) {
+  const steps = Array.isArray(processData.steps) ? processData.steps : [];
+
+  if (!steps.length) {
+    return `graph TD
+    A[👋 Start describing your process] --> B[Casey will map it here]
+    B --> C[🎯 Visual process map]
+
+    classDef default fill:#0ea5e9,stroke:#67e8f9,stroke-width:2px,color:#fff`;
+  }
+
+  const lines = [
+    'graph TD',
+    '    classDef stepNode fill:#0ea5e9,stroke:#67e8f9,stroke-width:2px,color:#fff',
+    '    classDef riskNode fill:#ef4444,stroke:#f87171,stroke-width:2px,color:#fff'
+  ];
+
+  let prevId = null;
+
+  steps.forEach((step, index) => {
+    const nodeId = `S${index + 1}`;
+    const cleanStep = step.replace(/"/g, '\\"').substring(0, 50); // Limit length and escape quotes
+    const risk = simData.scores && simData.scores[index] ? simData.scores[index].risk : 0;
+    const nodeClass = risk > 2 ? 'riskNode' : 'stepNode';
+
+    // Create node
+    lines.push(`    ${nodeId}["${index + 1}. ${cleanStep}"]:::${nodeClass}`);
+
+    // Create connection to previous node
+    if (prevId) {
+      lines.push(`    ${prevId} --> ${nodeId}`);
+    }
+
+    prevId = nodeId;
+  });
+
+  return lines.join('\n');
 }
 
-refreshDiagram(); // first load
+// Export graph function
+function exportGraph() {
+  const svg = document.querySelector('#mermaidContainer svg');
+  if (!svg) {
+    alert('No graph to export. Please generate a process first.');
+    return;
+  }
+
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'process-map.svg';
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// Initialize the interface
+document.addEventListener('DOMContentLoaded', function() {
+  // Focus on the input
+  document.getElementById('content').focus();
+
+  // Set default tab
+  switchTab('chat');
+});
 </script>
 {% endblock %}
