@@ -4,7 +4,7 @@ import asyncio
 import re
 from pathlib import Path
 from typing import Dict, List
-from fastapi import FastAPI, Request, UploadFile, File, Form
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -203,8 +203,8 @@ if not USE_DATABASE:
         }
 
     # API Endpoints for Simple Mode
-    @app.post("/api/conversations/1/message_stream")
-    async def message_stream(content: str = Form(...)):
+    @app.get("/api/conversations/1/message_stream")
+    async def message_stream(content: str):
         """Handle chat messages with intelligent processing"""
         # Store user message
         user_msg = {
@@ -241,7 +241,7 @@ if not USE_DATABASE:
         # Stream response
         async def generate_response():
             for char in response_text:
-                yield char
+                yield f"data: {char}\n\n"
                 await asyncio.sleep(0.02)
 
             # Store assistant message
@@ -255,8 +255,9 @@ if not USE_DATABASE:
                     "confidence": 0.8
                 }
             })
+            yield "data: [DONE]\n\n"
 
-        return StreamingResponse(generate_response(), media_type="text/plain")
+        return StreamingResponse(generate_response(), media_type="text/event-stream")
 
     @app.get("/api/conversations/1/latest_process")
     def get_latest_process():
