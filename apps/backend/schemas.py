@@ -438,7 +438,6 @@ class ProjectInsight(ProjectInsightBase):
 
 class ProjectUploadResponse(BaseModel):
     project: CreativeProject
-    questions: List[ProjectQuestion]
     next_steps: List[str]
 
 class ProjectAnalysisResponse(BaseModel):
