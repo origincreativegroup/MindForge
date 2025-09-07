@@ -12,3 +12,4 @@ orjson==3.9.15
 pypdf==4.0.1
 # Optional for better performance (fallback to stdlib json if not available)
 python-dotenv==1.0.0
+langchain==0.1.17

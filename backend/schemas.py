@@ -37,6 +37,8 @@ class ProcessMapCreate(BaseModel):
     actors: List[str] = []
     tools: List[str] = []
     decisions: List[str] = []
+    inputs: List[str] = []
+    outputs: List[str] = []
     raw_chunks: List[str] = []
 
 class ProcessMapOut(BaseModel):
@@ -46,6 +48,8 @@ class ProcessMapOut(BaseModel):
     actors: List[str]
     tools: List[str]
     decisions: List[str]
+    inputs: List[str]
+    outputs: List[str]
     raw_chunks: List[str]
     created_at: datetime
 
