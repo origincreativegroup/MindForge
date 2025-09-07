@@ -445,8 +445,6 @@ class ProjectAnalysisResponse(BaseModel):
     analysis_complete: bool
     insights: List[ProjectInsight]
     suggestions: List[str]
-    color_palette: Optional[List[str]] = None
-    dimensions: Optional[Dict[str, int]] = None
 
 class CaseyQuestionResponse(BaseModel):
     question_id: int
