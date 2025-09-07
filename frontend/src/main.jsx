@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ProcessVisualizer from './components/ProcessVisualizer.jsx';
+import App from './App.jsx';
 import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ProcessVisualizer />
+    <App />
   </React.StrictMode>
 );

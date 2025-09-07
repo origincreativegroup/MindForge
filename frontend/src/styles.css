@@ -1,11 +1,88 @@
 body {
   margin: 0;
   font-family: sans-serif;
+  background: #1e1e1e;
+  color: #e0e0e0;
 }
 
 #root {
-  display: flex;
   height: 100vh;
+}
+
+.app {
+  display: flex;
+  height: 100%;
+}
+
+.sidebar {
+  width: 250px;
+  background: #111;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-right: 1px solid #2a2a2a;
+}
+
+.sidebar-item {
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sidebar-item:hover {
+  background: #2a2a2a;
+}
+
+.main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-overlay {
+  position: absolute;
+  text-align: center;
+}
+
+.welcome-overlay h1 {
+  font-weight: normal;
+  margin-bottom: 1rem;
+}
+
+.input-box {
+  display: flex;
+  align-items: center;
+  background: #2a2a2a;
+  border: 1px solid #3f3f3f;
+  border-radius: 24px;
+  padding: 0.5rem 1rem;
+  width: 400px;
+  max-width: 80%;
+}
+
+.input-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  outline: none;
+}
+
+.input-box button {
+  background: #3f3f3f;
+  border: none;
+  color: #e0e0e0;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.input-box button:hover {
+  background: #4f4f4f;
 }
 
 svg {
@@ -16,7 +93,7 @@ svg {
 
 .annotation {
   position: absolute;
-  background: rgba(255,255,0,0.8);
+  background: rgba(16, 163, 127, 0.8);
   padding: 2px 4px;
   border-radius: 4px;
   pointer-events: none;
