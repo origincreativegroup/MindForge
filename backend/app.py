@@ -2,6 +2,7 @@ import os
 import time
 import asyncio
 import re
+import random
 from pathlib import Path
 from typing import Dict, List
 from fastapi import FastAPI, Request, UploadFile, File
@@ -113,6 +114,15 @@ if not USE_DATABASE:
             question = "What happens next in this process?"
 
         return prefix + question
+
+    def generate_smart_chips(text: str) -> List[str]:
+        """Return varied follow-up suggestions to keep the chat moving."""
+        suggestions = [
+            ["Can you elaborate?", "Could you clarify?", "Could you expand on that?"],
+            ["Who is involved?", "Which team handles this?", "Who's responsible?"],
+            ["What tools are used?", "Any software involved?", "What platforms play a role?"],
+        ]
+        return [random.choice(group) for group in suggestions]
 
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""
@@ -421,11 +431,17 @@ async def chat(request: Request, message: str = Form("")):
         else:
             reply = f"You said: {text}"
 
+        # Clear chips from previous messages so only the newest assistant
+        # message shows suggestions.
+        for m in STATE["messages"]:
+            m.pop("chips", None)
+
         STATE["messages"].append(
             {
                 "role": "assistant",
                 "html": reply,
                 "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+                "chips": generate_smart_chips(reply),
             }
         )
 
