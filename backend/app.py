@@ -116,13 +116,6 @@ if not USE_DATABASE:
         return prefix + question
 
     def generate_smart_chips(text: str) -> List[str]:
-        """Return varied follow-up suggestions to keep the chat moving."""
-        suggestions = [
-            ["Can you elaborate?", "Could you clarify?", "Could you expand on that?"],
-            ["Who is involved?", "Which team handles this?", "Who's responsible?"],
-            ["What tools are used?", "Any software involved?", "What platforms play a role?"],
-        ]
-        return [random.choice(group) for group in suggestions]
 
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""
