@@ -12,16 +12,16 @@ dev:
 fmt:
 	pre-commit run --all-files
 
-test:
-        pytest -q
+test: .dev-venv
+	pytest -q
 
-lint:
-        ruff check apps packages
-        pnpm -C $(DEV_FRONTEND) lint
+lint: .dev-venv
+	ruff check apps packages
+	pnpm -C $(DEV_FRONTEND) lint
 
-typecheck:
-        mypy $(DEV_BACKEND)
-        pnpm -C $(DEV_FRONTEND) typecheck
+typecheck: .dev-venv
+	mypy $(DEV_BACKEND)
+	pnpm -C $(DEV_FRONTEND) typecheck
 
 build:
 	pnpm -C $(DEV_FRONTEND) build
@@ -36,5 +36,5 @@ seed:
 	python ops/seed.py
 
 hooks:
-        pre-commit install
-        pre-commit install --hook-type commit-msg
+	pre-commit install
+	pre-commit install --hook-type commit-msg
