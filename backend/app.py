@@ -114,6 +114,16 @@ if not USE_DATABASE:
 
         return prefix + question
 
+    def generate_smart_chips(text: str) -> List[str]:
+        """Return simple follow-up suggestions to keep the chat moving."""
+        # For now these are static prompts generated server-side. They can be
+        # swapped out for an LLM-powered suggestion engine later.
+        return [
+            "Can you elaborate?",
+            "Who is involved?",
+            "What tools are used?",
+        ]
+
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""
         elements = {"steps": [], "actors": [], "tools": []}
@@ -421,11 +431,17 @@ async def chat(request: Request, message: str = Form("")):
         else:
             reply = f"You said: {text}"
 
+        # Clear chips from previous messages so only the newest assistant
+        # message shows suggestions.
+        for m in STATE["messages"]:
+            m.pop("chips", None)
+
         STATE["messages"].append(
             {
                 "role": "assistant",
                 "html": reply,
                 "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+                "chips": generate_smart_chips(reply),
             }
         )
 

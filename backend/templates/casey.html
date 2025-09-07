@@ -73,6 +73,13 @@
               <div class="mt-1 text-[11px] text-muted">
                 {{ m.created_at }} · Casey
               </div>
+              {% if m.chips %}
+              <div class="mt-2 flex flex-wrap gap-2">
+                {% for chip in m.chips %}
+                <button class="chip text-xs border border-border rounded-full px-3 py-1 bg-bg/50 hover:bg-bg/80 text-accent" data-text="{{ chip }}">{{ chip }}</button>
+                {% endfor %}
+              </div>
+              {% endif %}
             </div>
           {% endif %}
         </article>
@@ -197,6 +204,15 @@
     document.addEventListener('drop', (e) => {
       if (e.dataTransfer.files?.length) {
         fileIn.files = e.dataTransfer.files;
+      }
+    });
+
+    // Smart chip quick replies
+    document.addEventListener('click', (e) => {
+      if (e.target.matches('.chip')) {
+        input.value = e.target.dataset.text;
+        autosize();
+        form.requestSubmit();
       }
     });
 
