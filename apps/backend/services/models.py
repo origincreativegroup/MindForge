@@ -77,6 +77,21 @@ class ProjectStatus(PyEnum):
     archived = "archived"
 
 
+class ProjectType(PyEnum):
+    """Types of creative projects."""
+    
+    branding = "branding"
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_design = "print_design"
+    illustration = "illustration"
+    photography = "photography"
+    video_production = "video_production"
+    ui_ux = "ui_ux"
+    packaging = "packaging"
+    logo_design = "logo_design"
+
+
 class AssetType(PyEnum):
     """Supported media types."""
 
@@ -151,6 +166,13 @@ class Project(Base):
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     disciplines = Column(JSON, default=list)
     hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
+    
+    # Analysis fields
+    project_type = Column(Enum(ProjectType), nullable=True)
+    file_path = Column(String, nullable=True)
+    dimensions = Column(JSON, nullable=True)  # {"width": int, "height": int}
+    color_palette = Column(JSON, default=list)  # List of hex color strings
+    extracted_text = Column(Text, nullable=True)
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
@@ -324,3 +346,18 @@ class LearningGoal(Base):
     due_date = Column(Date, nullable=True)
 
     skill = relationship("Skill", back_populates="goals")
+
+
+class ProjectInsight(Base):
+    __tablename__ = "project_insights"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey("projects.id"))
+    insight_type = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    score = Column(Integer, nullable=False)  # Store as integer (0-100) to avoid float precision issues
+    data = Column(JSON, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    project = relationship("Project")
