@@ -54,22 +54,36 @@ A[Start]-->B[Describe a task]</pre>
 async function sendMsg(e){
   e.preventDefault();
   const box = document.getElementById('content');
+  const btn = document.querySelector('#composer button');
   const text = box.value.trim(); if(!text) return;
   addMsg('user', text); box.value='';
+  box.disabled = true; btn.disabled = true;
   const fd = new FormData(); fd.append('content', text);
-  const resp = await fetch('/api/conversations/1/message_stream', { method:'POST', body: fd });
-  if (!resp.ok || !resp.body){ addMsg('assistant', '(stream error)'); return; }
-  const reader = resp.body.getReader(); const dec = new TextDecoder('utf-8'); let agg='';
-  while(true){ const {value, done} = await reader.read(); if(done) break; const chunk = dec.decode(value, {stream:true}); agg += chunk; streamChunk(chunk); }
-  addMsg('assistant', agg);
+  try{
+    const resp = await fetch('/api/conversations/1/message_stream', { method:'POST', body: fd });
+    if (!resp.ok || !resp.body){ addMsg('assistant', '(stream error)'); return; }
+    const reader = resp.body.getReader(); const dec = new TextDecoder('utf-8'); let agg='';
+    const bubble = addMsg('assistant', '…');
+    while(true){
+      const {value, done} = await reader.read();
+      if(done) break;
+      const chunk = dec.decode(value, {stream:true});
+      agg += chunk;
+      bubble.textContent = agg;
+    }
+  } finally {
+    box.disabled = false; btn.disabled = false;
+  }
   await refreshDiagram();
 }
-function streamChunk(t){ /* could animate typing later */ }
 function addMsg(role, text){
   const chat = document.getElementById('chat');
   const div = document.createElement('div'); div.className = 'msg ' + role;
-  div.innerHTML = `<div class="bubble"></div>`; div.querySelector('.bubble').textContent = text;
+  div.innerHTML = `<div class="bubble"></div>`;
+  const bubble = div.querySelector('.bubble');
+  bubble.textContent = text;
   chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+  return bubble;
 }
 
 async function doUpload(e){
