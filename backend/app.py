@@ -116,6 +116,27 @@ if not USE_DATABASE:
         return prefix + question
 
     def generate_smart_chips(text: str) -> List[str]:
+        """
+        Generate contextual suggestion chips based on the assistant's reply.
+        """
+        t = text.lower() if text else ""
+        chips: List[str] = []
+
+        if any(word in t for word in ["step", "process", "workflow"]):
+            chips.append("What is the next step?")
+        if any(word in t for word in ["who", "actor", "owner", "responsible"]):
+            chips.append("Who is responsible?")
+        if any(word in t for word in ["tool", "system", "application"]):
+            chips.append("What tools are used?")
+
+        if not chips:
+            chips = [
+                "What is the next step?",
+                "Who is responsible?",
+                "What tools are used?",
+            ]
+
+        return chips[:5]
 
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""
