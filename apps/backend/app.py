@@ -69,7 +69,7 @@ if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
     
     try:
-        from services.business_partner import BusinessPartnerService
+        from .services.business_partner import BusinessPartnerService
         business_partner = BusinessPartnerService()
         BUSINESS_PARTNER_AVAILABLE = True
         print("✅ Business Partner AI enabled")
@@ -247,7 +247,7 @@ if not USE_DATABASE:
             "automation_potential": 100 - risk_score if "automated" in process_text else risk_score
         }
 
-    from services.business_partner import BusinessPartnerService
+    from .services.business_partner import BusinessPartnerService
     
     # Initialize Business Partner Service
     business_partner = BusinessPartnerService()
