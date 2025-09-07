@@ -74,3 +74,47 @@ class WorkingProcessSlate:
 
     def clear(self) -> None:
         self.active = None
+
+
+class ContextMemory:
+    """Track conversational turns, extracted process elements and emotions.
+
+    The class combines three simple stores:
+
+    * ``session`` – rolling window of the dialogue using :class:`ShortTermMemory`
+    * ``process`` – list of structured process element dictionaries
+    * ``emotions`` – history of detected emotional scores
+
+    It provides tiny helper methods for updating each store and for retrieving
+    common views such as the current transcript or the most recent emotion
+    scores.  No external dependencies are required which keeps this component
+    lightweight and easy to test.
+    """
+
+    def __init__(self, max_turns: int = 12) -> None:
+        self.session = ShortTermMemory(max_turns=max_turns)
+        self.process: List[Dict[str, object]] = []
+        self.emotions: List[Dict[str, float]] = []
+
+    # session memory -----------------------------------------------------
+    def add_turn(self, role: str, content: str) -> None:
+        """Record a new conversation turn."""
+        self.session.add(role, content)
+
+    def transcript(self) -> str:
+        """Return the recent conversation transcript."""
+        return self.session.transcript()
+
+    # process memory -----------------------------------------------------
+    def add_process_elements(self, elements: Dict[str, object]) -> None:
+        """Append extracted process elements to the history."""
+        self.process.append(elements)
+
+    # emotional memory ---------------------------------------------------
+    def add_emotions(self, scores: Dict[str, float]) -> None:
+        """Store detected emotional scores for the latest turn."""
+        self.emotions.append(scores)
+
+    def latest_emotion(self) -> Dict[str, float]:
+        """Return the most recent emotional score dictionary."""
+        return self.emotions[-1] if self.emotions else {}
