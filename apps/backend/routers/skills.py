@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .. import schemas
 from ..db import get_db
-from ..services import models, skill_matrix
+from .services import models, skill_matrix
 
 router = APIRouter(prefix="/skills", tags=["skills"])
 
