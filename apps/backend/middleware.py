@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from integrations.database import SessionLocal
+from packages.integrations.database import SessionLocal
 from .services.models import Asset, AssetVisibility
 
 
