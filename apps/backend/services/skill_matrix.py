@@ -4,7 +4,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from .models import Skill, SkillEvidence
+from apps.backend.services.models import Skill, SkillEvidence
 
 
 def most_demonstrated_skills(db: Session, limit: int = 5) -> List[dict]:
