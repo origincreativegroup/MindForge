@@ -721,44 +721,82 @@ function updateComplexityIndicator(complexity) {
 
 function updateAIInsights(insights) {
   const container = document.getElementById('ai-insights-container');
-  
+
   if (!insights || insights.length === 0) {
     container.innerHTML = '<div class="ai-thinking">No insights yet. Describe your process to get AI analysis.</div>';
     return;
   }
-  
-  container.innerHTML = insights.slice(0, 3).map(insight => `
-    <div class="insight-card" style="margin-bottom: 8px; padding: 8px;">
-      <div class="insight-header">
-        <div class="insight-title">${getInsightIcon(insight.type)} ${insight.title}</div>
-        <span class="ai-badge">${Math.round(insight.confidence * 100)}%</span>
-      </div>
-      <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">
-        ${insight.description}
-      </div>
-      <div class="confidence-bar">
-        <div class="confidence-fill" style="width: ${insight.confidence * 100}%"></div>
-      </div>
-      ${insight.actionable_steps && insight.actionable_steps.length > 0 ? 
-        `<div style="font-size: 11px; margin-top: 8px;">
-          <strong>Next Step:</strong> ${insight.actionable_steps[0]}
-        </div>` : ''
-      }
-    </div>
-  `).join('');
+
+  // Clear previous contents and render insights using text nodes to avoid XSS
+  container.textContent = '';
+  insights.slice(0, 3).forEach(insight => {
+    const card = document.createElement('div');
+    card.className = 'insight-card';
+    card.style.marginBottom = '8px';
+    card.style.padding = '8px';
+
+    const header = document.createElement('div');
+    header.className = 'insight-header';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'insight-title';
+    titleDiv.textContent = `${getInsightIcon(insight.type)} ${insight.title}`;
+
+    const badge = document.createElement('span');
+    badge.className = 'ai-badge';
+    badge.textContent = `${Math.round(insight.confidence * 100)}%`;
+
+    header.appendChild(titleDiv);
+    header.appendChild(badge);
+    card.appendChild(header);
+
+    const descDiv = document.createElement('div');
+    descDiv.style.fontSize = '12px';
+    descDiv.style.opacity = '0.9';
+    descDiv.style.marginBottom = '8px';
+    descDiv.textContent = insight.description;
+    card.appendChild(descDiv);
+
+    const bar = document.createElement('div');
+    bar.className = 'confidence-bar';
+    const fill = document.createElement('div');
+    fill.className = 'confidence-fill';
+    fill.style.width = `${insight.confidence * 100}%`;
+    bar.appendChild(fill);
+    card.appendChild(bar);
+
+    if (insight.actionable_steps && insight.actionable_steps.length > 0) {
+      const stepDiv = document.createElement('div');
+      stepDiv.style.fontSize = '11px';
+      stepDiv.style.marginTop = '8px';
+      const strong = document.createElement('strong');
+      strong.textContent = 'Next Step:';
+      stepDiv.appendChild(strong);
+      stepDiv.append(' ');
+      stepDiv.append(insight.actionable_steps[0]);
+      card.appendChild(stepDiv);
+    }
+
+    container.appendChild(card);
+  });
 }
 
 function updateRecommendations(recommendations) {
   const list = document.getElementById('recommendations-list');
-  
+
   if (!recommendations || recommendations.length === 0) {
     list.innerHTML = '<li class="ai-thinking">Analyzing process for recommendations...</li>';
     return;
   }
-  
-  list.innerHTML = recommendations.map(rec => `
-    <li class="recommendation-item">${rec}</li>
-  `).join('');
+
+  // Render each recommendation using text nodes to prevent XSS
+  list.textContent = '';
+  recommendations.forEach(rec => {
+    const li = document.createElement('li');
+    li.className = 'recommendation-item';
+    li.textContent = rec;
+    list.appendChild(li);
+  });
 }
 
 function updateAIMetrics(simData) {
