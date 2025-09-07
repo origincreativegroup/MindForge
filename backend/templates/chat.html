@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Chat · #{{ conv.id }}</h1>
+
+<div class="layout">
+  <div class="panel">
+    <div id="chat" class="chat">
+      {% if conv.messages|length == 0 %}
+      <div class="empty">Describe how work happens. “Customer emails → Support triages → Eng fixes → Finance bills”.</div>
+      {% endif %}
+      {% for m in conv.messages %}
+      <div class="msg {{ m.role }}"><div class="bubble">{{ m.content }}</div></div>
+      {% endfor %}
+    </div>
+
+    <form id="composer" class="row" onsubmit="sendMsg(event)">
+      <textarea id="content" rows="3" class="input" placeholder="Type a process in your own words…"></textarea>
+      <button class="btn" type="submit">Send</button>
+    </form>
+
+    <div class="row" style="margin-top:8px">
+      <form id="uploadForm" class="row" enctype="multipart/form-data" onsubmit="doUpload(event)">
+        <input type="file" name="file" id="fileInput" />
+        <button class="btn" type="submit">Upload</button>
+        <small class="small" id="uploadInfo"></small>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between;align-items:center;">
+      <h2>Live Process Graph</h2>
+      <div class="row">
+        <label class="small">Scale</label>
+        <input type="range" id="simSlider" min="1" max="3" step="0.1" value="1.5" />
+        <button class="btn" id="simulateBtn">Simulate</button>
+      </div>
+    </div>
+    <div id="mermaidContainer" class="mermaid-card">
+      <pre id="mermaid" class="mermaid">flowchart LR
+A[Start]-->B[Describe a task]</pre>
+    </div>
+    <div class="legend" style="margin-top:6px">
+      <span class="pill">Step</span><span class="pill">Decision</span><span class="pill">Actor</span><span class="pill">Tool</span>
+      <span class="small" id="cycleTime">Predicted cycle time: — h</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });</script>
+
+<script>
+async function sendMsg(e){
+  e.preventDefault();
+  const box = document.getElementById('content');
+  const text = box.value.trim(); if(!text) return;
+  addMsg('user', text); box.value='';
+  const fd = new FormData(); fd.append('content', text);
+  const resp = await fetch('/api/conversations/1/message_stream', { method:'POST', body: fd });
+  if (!resp.ok || !resp.body){ addMsg('assistant', '(stream error)'); return; }
+  const reader = resp.body.getReader(); const dec = new TextDecoder('utf-8'); let agg='';
+  while(true){ const {value, done} = await reader.read(); if(done) break; const chunk = dec.decode(value, {stream:true}); agg += chunk; streamChunk(chunk); }
+  addMsg('assistant', agg);
+  await refreshDiagram();
+}
+function streamChunk(t){ /* could animate typing later */ }
+function addMsg(role, text){
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div'); div.className = 'msg ' + role;
+  div.innerHTML = `<div class="bubble"></div>`; div.querySelector('.bubble').textContent = text;
+  chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+}
+
+async function doUpload(e){
+  e.preventDefault();
+  const f = document.getElementById('fileInput').files[0]; if(!f) return;
+  const fd = new FormData(); fd.append('file', f);
+  const r = await fetch('/api/conversations/1/upload', { method:'POST', body: fd });
+  const j = await r.json().catch(()=>({}));
+  document.getElementById('uploadInfo').textContent = j.ok ? `Uploaded ${j.file.filename} (${j.file.size} bytes)` : 'Upload failed';
+  await refreshDiagram();
+}
+
+document.getElementById('simulateBtn').addEventListener('click', async ()=>{
+  await refreshDiagram();
+});
+
+async function refreshDiagram(){
+  const [pRes, sRes] = await Promise.all([
+    fetch('/api/conversations/1/latest_process'),
+    fetch('/api/conversations/1/simulate?scale=' + encodeURIComponent(document.getElementById('simSlider').value))
+  ]);
+  const p = await pRes.json(); const sim = await sRes.json();
+  document.getElementById('cycleTime').textContent = 'Predicted cycle time: ' + (sim.cycle_time_hours?.toFixed ? sim.cycle_time_hours.toFixed(1) : sim.cycle_time_hours) + ' h';
+  const code = buildMermaid(p, sim);
+  const target = document.getElementById('mermaid');
+  target.textContent = code;
+  mermaid.run({nodes:[target]});
+}
+
+function buildMermaid(p, sim){
+  const steps = Array.isArray(p.steps)? p.steps : [];
+  if (!steps.length) return "flowchart LR\\nA[Start]-->B[Describe a task]";
+  const lines = ["flowchart TD",
+    "classDef step fill:#0ea5e9,stroke:#67e8f9,stroke-width:1px,color:#06223a;",
+    "classDef clickable stroke-dasharray: 3 2;"];
+  let prev=null; steps.forEach((s,i)=>{ const id='S'+(i+1); lines.push(`${id}["${i+1}. ${s.replace(/"/g,'\\"')}"]:::step clickable`); if(prev) lines.push(`${prev}-->${id}`); prev=id; });
+  return lines.join("\\n");
+}
+
+refreshDiagram(); // first load
+</script>
+{% endblock %}
