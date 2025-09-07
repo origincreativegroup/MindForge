@@ -1,128 +1,972 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Chat · #{{ conv.id }}</h1>
+<style>
+.tabs {
+  display: flex;
+  background: var(--panel);
+  border-radius: 12px 12px 0 0;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  overflow: hidden;
+}
+.tab {
+  padding: 12px 20px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--sub);
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab.active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.tab:hover:not(.active) {
+  background: rgba(96, 165, 250, 0.1);
+  color: var(--ink);
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.layout.show-ai {
+  grid-template-columns: 1fr 0.6fr;
+}
+.layout.show-graph {
+  grid-template-columns: 1fr 0.8fr;
+}
+.layout.show-both {
+  grid-template-columns: 1fr 0.4fr 0.4fr;
+}
 
-<div class="layout">
+/* AI Intelligence Styles */
+.ai-panel {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+  border: 1px solid #4338ca;
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.ai-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insight-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.insight-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.insight-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #06d6a0 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.metric-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.metric-label {
+  font-size: 11px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.recommendation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recommendation-item {
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 3px solid #10b981;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+}
+
+.ai-thinking {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #60a5fa;
+  font-style: italic;
+  margin: 8px 0;
+}
+
+.thinking-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.thinking-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #60a5fa;
+  animation: thinking 1.4s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes thinking {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.quick-action-btn {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid #60a5fa;
+  color: #60a5fa;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 4px;
+}
+
+.quick-action-btn:hover {
+  background: rgba(96, 165, 250, 0.3);
+  transform: translateY(-1px);
+}
+
+.complexity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.complexity-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.complexity-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.complexity-low { background: linear-gradient(90deg, #10b981, #34d399); }
+.complexity-medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.complexity-high { background: linear-gradient(90deg, #ef4444, #f87171); }
+</style>
+
+<h1>Chat · #{{ conv.id }} <span class="ai-badge">🧠 AI Enhanced</span></h1>
+
+<div class="tabs">
+  <button class="tab active" data-tab="chat" onclick="switchTab('chat', this)">
+    💬 Chat with Casey
+  </button>
+  <button class="tab" data-tab="ai" onclick="switchTab('ai', this)">
+    🧠 AI Intelligence
+  </button>
+  <button class="tab" data-tab="graph" onclick="switchTab('graph', this)">
+    📊 Process Graph
+  </button>
+  <button class="tab" data-tab="both" onclick="switchTab('both', this)">
+    🔄 Split View
+  </button>
+</div>
+
+<div id="main-layout" class="layout">
+  <!-- Chat Panel - Always Visible -->
   <div class="panel">
     <div id="chat" class="chat">
       {% if conv.messages|length == 0 %}
-      <div class="empty">Describe how work happens. “Customer emails → Support triages → Eng fixes → Finance bills”.</div>
+      <div class="empty">
+        🧠 Hi! I'm Casey, your AI-powered process intelligence assistant.<br>
+        I use advanced analysis to understand, optimize, and improve your workflows.<br><br>
+        Try: "Our customer onboarding process is really slow and frustrating"<br>
+        <em>I'll analyze it and provide intelligent recommendations!</em>
+      </div>
       {% endif %}
       {% for m in conv.messages %}
-      <div class="msg {{ m.role }}"><div class="bubble">{{ m.content }}</div></div>
+      <div class="msg {{ m.role }}">
+        <div class="bubble">{{ m.content }}</div>
+        {% if m.role == 'assistant' and m.get('ai_metadata') %}
+        <div class="ai-thinking">
+          🧠 AI Confidence: {{ "%.0f"|format(m.ai_metadata.confidence * 100) }}%
+          {% if m.ai_metadata.insights_count > 0 %}
+          | {{ m.ai_metadata.insights_count }} insights generated
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
       {% endfor %}
     </div>
 
-    <form id="composer" class="row" onsubmit="sendMsg(event)">
-      <textarea id="content" rows="3" class="input" placeholder="Type a process in your own words…"></textarea>
-      <button class="btn" type="submit">Send</button>
+    <form id="composer" onsubmit="sendMsg(event)">
+      <div class="row">
+        <textarea 
+          id="content" 
+          rows="3" 
+          class="input" 
+          placeholder="Describe your process and I'll analyze it with AI..."
+          onkeydown="handleKeyPress(event)"
+        ></textarea>
+        <button class="btn" type="submit">
+          <span class="send-text">Send</span>
+          <div class="thinking-dots" style="display: none;">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+        </button>
+      </div>
     </form>
 
+    <!-- Quick Action Buttons -->
+    <div id="quick-actions" style="margin-top: 8px; display: none;">
+      <button class="quick-action-btn" onclick="askAI('What are the main bottlenecks in this process?')">
+        🔍 Find Bottlenecks
+      </button>
+      <button class="quick-action-btn" onclick="askAI('How can we automate this process?')">
+        🤖 Automation Ideas
+      </button>
+      <button class="quick-action-btn" onclick="askAI('What are the biggest risks?')">
+        ⚠️ Risk Analysis
+      </button>
+      <button class="quick-action-btn" onclick="askAI('Generate optimization recommendations')">
+        ⚡ Optimize Process
+      </button>
+    </div>
+
     <div class="row" style="margin-top:8px">
-      <form id="uploadForm" class="row" enctype="multipart/form-data" onsubmit="doUpload(event)">
-        <input type="file" name="file" id="fileInput" />
-        <button class="btn" type="submit">Upload</button>
-        <small class="small" id="uploadInfo"></small>
+      <form id="uploadForm" enctype="multipart/form-data" onsubmit="doUpload(event)">
+        <input type="file" name="file" id="fileInput" accept=".pdf,.csv,.txt,.doc,.docx" />
+        <button class="btn" type="submit">📎 Upload & Analyze</button>
+        <small class="small" id="uploadInfo">AI will extract process insights from your documents</small>
       </form>
     </div>
   </div>
 
-  <div class="panel">
+  <!-- AI Intelligence Panel -->
+  <div id="ai-panel" class="ai-panel tab-content" style="display: none;">
+    <div class="ai-header">
+      <span>🧠</span>
+      <span>Process Intelligence</span>
+      <div class="ai-badge" id="ai-status">Analyzing...</div>
+    </div>
+
+    <!-- Process Complexity -->
+    <div class="insight-card">
+      <div class="insight-title">📊 Process Complexity</div>
+      <div class="complexity-indicator">
+        <span id="complexity-label">Unknown</span>
+        <div class="complexity-bar">
+          <div id="complexity-fill" class="complexity-fill" style="width: 0%"></div>
+        </div>
+      </div>
+      <div id="complexity-details" class="metric-grid" style="margin-top: 8px;">
+        <!-- Populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="insight-card">
+      <div class="insight-title">💡 AI Insights</div>
+      <div id="ai-insights-container">
+        <div class="ai-thinking">
+          <span>Waiting for process data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Recommendations -->
+    <div class="insight-card">
+      <div class="insight-title">🎯 Smart Recommendations</div>
+      <ul id="recommendations-list" class="recommendation-list">
+        <li class="ai-thinking">Analyzing your process...</li>
+      </ul>
+    </div>
+
+    <!-- Process Metrics -->
+    <div class="insight-card">
+      <div class="insight-title">📈 Predicted Metrics</div>
+      <div class="metric-grid" id="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-value" id="cycle-time-value">—</div>
+          <div class="metric-label">Cycle Time (hrs)</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value" id="automation-score">—</div>
+          <div class="metric-label">Automation %</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value" id="risk-score">—</div>
+          <div class="metric-label">Risk Factors</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value" id="optimization-score">—</div>
+          <div class="metric-label">Optimization</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direct AI Chat -->
+    <div class="insight-card">
+      <div class="insight-title">🤖 Ask AI Directly</div>
+      <form onsubmit="askAIDirect(event)">
+        <input type="text" id="ai-question" placeholder="Ask me anything about this process..." 
+               style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px; border-radius: 6px; margin-bottom: 8px;">
+        <button type="submit" style="width: 100%; background: rgba(96, 165, 250, 0.3); border: 1px solid #60a5fa; color: #60a5fa; padding: 8px; border-radius: 6px; cursor: pointer;">
+          Ask AI
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Process Graph Panel -->
+  <div id="graph-panel" class="panel tab-content" style="display: none;">
     <div class="row" style="justify-content:space-between;align-items:center;">
-      <h2>Live Process Graph</h2>
+      <h2>Process Visualization</h2>
       <div class="row">
         <label class="small">Scale</label>
         <input type="range" id="simSlider" min="1" max="3" step="0.1" value="1.5" />
-        <button class="btn" id="simulateBtn">Simulate</button>
+        <button class="btn" id="simulateBtn">🔮 AI Simulate</button>
+        <button class="btn" onclick="exportGraph()">📥 Export</button>
       </div>
     </div>
     <div id="mermaidContainer" class="mermaid-card">
-      <pre id="mermaid" class="mermaid">flowchart LR
-A[Start]-->B[Describe a task]</pre>
+      <pre id="mermaid" class="mermaid">
+graph TD
+    A[🧠 AI-Powered Process Mapping] --> B[Describe your workflow]
+    B --> C[AI analyzes and visualizes]
+    C --> D[Get intelligent insights]
+    
+    classDef ai fill:#3b82f6,stroke:#60a5fa,stroke-width:2px,color:#fff
+    class A,C,D ai
+      </pre>
     </div>
     <div class="legend" style="margin-top:6px">
-      <span class="pill">Step</span><span class="pill">Decision</span><span class="pill">Actor</span><span class="pill">Tool</span>
-      <span class="small" id="cycleTime">Predicted cycle time: — h</span>
+      <span class="pill step">Step</span>
+      <span class="pill decision">Decision</span>
+      <span class="pill actor">Actor</span>
+      <span class="pill tool">Tool</span>
+      <span class="small" id="cycleTime">AI calculating cycle time...</span>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });</script>
-
 <script>
-async function sendMsg(e){
-  e.preventDefault();
+// Initialize Mermaid with AI theme
+mermaid.initialize({ 
+  startOnLoad: false, 
+  theme: 'dark', 
+  securityLevel: 'loose',
+  flowchart: {
+    useMaxWidth: true,
+    htmlLabels: true
+  }
+});
+
+// Global state for AI data
+let aiData = {
+  insights: [],
+  recommendations: [],
+  metrics: {},
+  complexity: {}
+};
+
+// Tab switching functionality
+function switchTab(tab, element) {
+  const layout = document.getElementById('main-layout');
+  const aiPanel = document.getElementById('ai-panel');
+  const graphPanel = document.getElementById('graph-panel');
+  const tabs = document.querySelectorAll('.tab');
+
+  // Remove active class from all tabs
+  tabs.forEach(t => t.classList.remove('active'));
+  if (!element) {
+    element = document.querySelector(`.tab[data-tab="${tab}"]`);
+  }
+  if (element) {
+    element.classList.add('active');
+  }
+  
+  // Hide all panels
+  aiPanel.style.display = 'none';
+  graphPanel.style.display = 'none';
+  
+  switch(tab) {
+    case 'chat':
+      layout.className = 'layout';
+      break;
+    case 'ai':
+      layout.className = 'layout show-ai';
+      aiPanel.style.display = 'block';
+      setTimeout(() => refreshAIIntelligence(), 100);
+      break;
+    case 'graph':
+      layout.className = 'layout show-graph';
+      graphPanel.style.display = 'block';
+      setTimeout(() => refreshDiagram(), 100);
+      break;
+    case 'both':
+      layout.className = 'layout show-both';
+      aiPanel.style.display = 'block';
+      graphPanel.style.display = 'block';
+      setTimeout(() => {
+        refreshAIIntelligence();
+        refreshDiagram();
+      }, 100);
+      break;
+  }
+}
+
+// Handle Enter key in textarea
+function handleKeyPress(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMsg(event);
+  }
+}
+
+// Enhanced send message with AI processing
+async function sendMsg(event) {
+  if (event) event.preventDefault();
+  
   const box = document.getElementById('content');
   const btn = document.querySelector('#composer button');
-  const text = box.value.trim(); if(!text) return;
-  addMsg('user', text); box.value='';
-  box.disabled = true; btn.disabled = true;
-  const fd = new FormData(); fd.append('content', text);
-  try{
-    const resp = await fetch('/api/conversations/1/message_stream', { method:'POST', body: fd });
-    if (!resp.ok || !resp.body){ addMsg('assistant', '(stream error)'); return; }
-    const reader = resp.body.getReader(); const dec = new TextDecoder('utf-8'); let agg='';
-    const bubble = addMsg('assistant', '…');
-    while(true){
-      const {value, done} = await reader.read();
-      if(done) break;
-      const chunk = dec.decode(value, {stream:true});
-      agg += chunk;
-      bubble.textContent = agg;
+  const sendText = btn.querySelector('.send-text');
+  const thinkingDots = btn.querySelector('.thinking-dots');
+  const text = box.value.trim();
+  
+  if (!text) return;
+  
+  // Add user message immediately
+  addMsg('user', text);
+  box.value = '';
+  
+  // Show AI thinking state
+  box.disabled = true;
+  btn.disabled = true;
+  sendText.style.display = 'none';
+  thinkingDots.style.display = 'flex';
+  
+  // Show quick actions after first message
+  document.getElementById('quick-actions').style.display = 'block';
+  
+  // Prepare form data
+  const formData = new FormData();
+  formData.append('content', text);
+  
+  try {
+    const response = await fetch('/api/conversations/1/message_stream', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    if (!response.body) {
+      addMsg('assistant', '🧠 AI analysis temporarily unavailable. Please try again.');
+      return;
+    }
+    
+    // Handle streaming response
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let assistantText = '';
+    const assistantBubble = addMsg('assistant', '🧠 Processing with AI...');
+    
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      assistantText += chunk;
+      assistantBubble.textContent = assistantText;
+    }
+    
+    // Refresh AI intelligence and graph
+    setTimeout(() => {
+      refreshAIIntelligence();
+      if (document.getElementById('graph-panel').style.display !== 'none') {
+        refreshDiagram();
+      }
+    }, 500);
+    
+  } catch (error) {
+    console.error('Error sending message:', error);
+    addMsg('assistant', '🧠 AI analysis error. Please check your connection and try again.');
   } finally {
-    box.disabled = false; btn.disabled = false;
+    // Re-enable input
+    box.disabled = false;
+    btn.disabled = false;
+    sendText.style.display = 'inline';
+    thinkingDots.style.display = 'none';
+    box.focus();
   }
-  await refreshDiagram();
 }
-function addMsg(role, text){
+
+// Enhanced add message with AI metadata
+function addMsg(role, text, aiMetadata = null) {
   const chat = document.getElementById('chat');
-  const div = document.createElement('div'); div.className = 'msg ' + role;
-  div.innerHTML = `<div class="bubble"></div>`;
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  
+  let bubbleHTML = `<div class="bubble">${text}</div>`;
+  
+  if (role === 'assistant' && aiMetadata) {
+    bubbleHTML += `
+      <div class="ai-thinking">
+        🧠 AI Confidence: ${Math.round(aiMetadata.confidence * 100)}%
+        ${aiMetadata.insights_count > 0 ? ` | ${aiMetadata.insights_count} insights generated` : ''}
+      </div>
+    `;
+  }
+  
+  div.innerHTML = bubbleHTML;
   const bubble = div.querySelector('.bubble');
-  bubble.textContent = text;
-  chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
   return bubble;
 }
 
-async function doUpload(e){
-  e.preventDefault();
-  const f = document.getElementById('fileInput').files[0]; if(!f) return;
-  const fd = new FormData(); fd.append('file', f);
-  const r = await fetch('/api/conversations/1/upload', { method:'POST', body: fd });
-  const j = await r.json().catch(()=>({}));
-  document.getElementById('uploadInfo').textContent = j.ok ? `Uploaded ${j.file.filename} (${j.file.size} bytes)` : 'Upload failed';
-  await refreshDiagram();
+// Quick AI questions
+async function askAI(question) {
+  const box = document.getElementById('content');
+  box.value = question;
+  await sendMsg();
 }
 
-document.getElementById('simulateBtn').addEventListener('click', async ()=>{
+// Direct AI chat
+async function askAIDirect(event) {
+  event.preventDefault();
+  const questionInput = document.getElementById('ai-question');
+  const question = questionInput.value.trim();
+  
+  if (!question) return;
+  
+  questionInput.value = '';
+  questionInput.disabled = true;
+  
+  try {
+    const formData = new FormData();
+    formData.append('question', question);
+    
+    const response = await fetch('/api/conversations/1/ask_ai', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    // Add AI response to chat
+    addMsg('user', `🤖 ${question}`);
+    addMsg('assistant', result.ai_response, {
+      confidence: result.confidence,
+      insights_count: result.insights ? result.insights.length : 0
+    });
+    
+    // Refresh AI panel
+    refreshAIIntelligence();
+    
+  } catch (error) {
+    console.error('Direct AI error:', error);
+    addMsg('assistant', '🧠 AI is thinking... Please try again.');
+  } finally {
+    questionInput.disabled = false;
+    questionInput.focus();
+  }
+}
+
+// Refresh AI Intelligence Panel
+async function refreshAIIntelligence() {
+  try {
+    // Fetch intelligence summary
+    const intelligenceRes = await fetch('/api/conversations/1/intelligence');
+    const intelligence = await intelligenceRes.json();
+    
+    // Fetch insights
+    const insightsRes = await fetch('/api/conversations/1/insights');
+    const insights = await insightsRes.json();
+    
+    // Update complexity indicator
+    updateComplexityIndicator(intelligence.complexity_assessment);
+    
+    // Update insights
+    updateAIInsights(insights.insights);
+    
+    // Update recommendations
+    updateRecommendations(intelligence.recommendations);
+    
+    // Update metrics from latest simulation
+    const simRes = await fetch('/api/conversations/1/simulate?scale=1.0');
+    const simData = await simRes.json();
+    updateAIMetrics(simData);
+    
+    // Update AI status
+    document.getElementById('ai-status').textContent = 'Active';
+    
+  } catch (error) {
+    console.error('Error refreshing AI intelligence:', error);
+    document.getElementById('ai-status').textContent = 'Error';
+  }
+}
+
+function updateComplexityIndicator(complexity) {
+  if (!complexity) return;
+  
+  const label = document.getElementById('complexity-label');
+  const fill = document.getElementById('complexity-fill');
+  const details = document.getElementById('complexity-details');
+  
+  const level = complexity.level;
+  const score = complexity.score;
+  
+  label.textContent = `${level.charAt(0).toUpperCase() + level.slice(1)} (${score.toFixed(1)})`;
+  
+  const percentage = Math.min((score / 20) * 100, 100);
+  fill.style.width = `${percentage}%`;
+  
+  // Set color based on complexity level
+  fill.className = `complexity-fill complexity-${level}`;
+  
+  // Update details
+  details.innerHTML = `
+    <div class="metric-item">
+      <div class="metric-value">${complexity.factors.step_count}</div>
+      <div class="metric-label">Steps</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">${complexity.factors.stakeholder_count}</div>
+      <div class="metric-label">Stakeholders</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">${complexity.factors.tool_count}</div>
+      <div class="metric-label">Tools</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-value">${complexity.factors.identified_issues}</div>
+      <div class="metric-label">Issues</div>
+    </div>
+  `;
+}
+
+function updateAIInsights(insights) {
+  const container = document.getElementById('ai-insights-container');
+  
+  if (!insights || insights.length === 0) {
+    container.innerHTML = '<div class="ai-thinking">No insights yet. Describe your process to get AI analysis.</div>';
+    return;
+  }
+  
+  container.innerHTML = insights.slice(0, 3).map(insight => `
+    <div class="insight-card" style="margin-bottom: 8px; padding: 8px;">
+      <div class="insight-header">
+        <div class="insight-title">${getInsightIcon(insight.type)} ${insight.title}</div>
+        <span class="ai-badge">${Math.round(insight.confidence * 100)}%</span>
+      </div>
+      <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">
+        ${insight.description}
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" style="width: ${insight.confidence * 100}%"></div>
+      </div>
+      ${insight.actionable_steps && insight.actionable_steps.length > 0 ? 
+        `<div style="font-size: 11px; margin-top: 8px;">
+          <strong>Next Step:</strong> ${insight.actionable_steps[0]}
+        </div>` : ''
+      }
+    </div>
+  `).join('');
+}
+
+function updateRecommendations(recommendations) {
+  const list = document.getElementById('recommendations-list');
+  
+  if (!recommendations || recommendations.length === 0) {
+    list.innerHTML = '<li class="ai-thinking">Analyzing process for recommendations...</li>';
+    return;
+  }
+  
+  list.innerHTML = recommendations.map(rec => `
+    <li class="recommendation-item">${rec}</li>
+  `).join('');
+}
+
+function updateAIMetrics(simData) {
+  if (!simData.ai_analysis) return;
+  
+  document.getElementById('cycle-time-value').textContent = simData.cycle_time_hours || '—';
+  document.getElementById('automation-score').textContent = 
+    simData.ai_analysis.automation_potential ? `${simData.ai_analysis.automation_potential.score}%` : '—';
+  document.getElementById('risk-score').textContent = 
+    simData.ai_analysis.risk_factors ? simData.ai_analysis.risk_factors.length : '—';
+  document.getElementById('optimization-score').textContent = 
+    simData.ai_analysis.optimization_score ? `${Math.round(simData.ai_analysis.optimization_score)}%` : '—';
+}
+
+function getInsightIcon(type) {
+  const icons = {
+    'optimization': '⚡',
+    'risk': '⚠️',
+    'compliance': '🛡️',
+    'performance': '📈',
+    'automation': '🤖'
+  };
+  return icons[type] || '💡';
+}
+
+// File upload with AI analysis
+async function doUpload(event) {
+  event.preventDefault();
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
+  
+  if (!file) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  document.getElementById('uploadInfo').textContent = '🧠 AI analyzing file...';
+  
+  try {
+    const response = await fetch('/api/conversations/1/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.ok) {
+      document.getElementById('uploadInfo').textContent = 
+        `✅ Analyzed ${file.name} - AI extracted ${result.ai_extracted || 0} process elements`;
+      addMsg('user', `📎 Uploaded: ${file.name}`);
+      addMsg('assistant', `🧠 AI analysis complete! I extracted ${result.ai_extracted || 0} process elements from your document.`);
+      
+      // Auto-refresh AI intelligence and graph
+      setTimeout(() => {
+        refreshAIIntelligence();
+        refreshDiagram();
+      }, 1000);
+    } else {
+      document.getElementById('uploadInfo').textContent = '❌ Upload failed';
+    }
+  } catch (error) {
+    console.error('Upload error:', error);
+    document.getElementById('uploadInfo').textContent = '❌ Upload error';
+  }
+  
+  fileInput.value = '';
+}
+
+// Enhanced diagram refresh with AI data
+async function refreshDiagram() {
+  try {
+    const [processRes, simRes] = await Promise.all([
+      fetch('/api/conversations/1/latest_process'),
+      fetch('/api/conversations/1/simulate?scale=' + encodeURIComponent(document.getElementById('simSlider').value))
+    ]);
+    
+    const processData = await processRes.json();
+    const simData = await simRes.json();
+    
+    // Update cycle time with AI analysis
+    const cycleTimeText = simData.ai_analysis ? 
+      `AI-predicted cycle time: ${simData.cycle_time_hours}h (${simData.ai_analysis.confidence} confidence)` :
+      `Predicted cycle time: ${simData.cycle_time_hours}h`;
+    
+    document.getElementById('cycleTime').textContent = cycleTimeText;
+    
+    // Generate enhanced Mermaid diagram
+    const mermaidCode = buildAIEnhancedMermaid(processData, simData);
+    const target = document.getElementById('mermaid');
+    target.textContent = mermaidCode;
+    
+    // Render with Mermaid
+    await mermaid.run({ nodes: [target] });
+    
+  } catch (error) {
+    console.error('Error refreshing diagram:', error);
+    document.getElementById('mermaid').textContent = 'graph TD\n    A[🧠 AI Analysis Error] --> B[Please try again]';
+  }
+}
+
+// Build AI-enhanced Mermaid diagram
+function buildAIEnhancedMermaid(processData, simData) {
+  const steps = Array.isArray(processData.steps) ? processData.steps : [];
+  
+  if (!steps.length) {
+    return `graph TD
+    A[🧠 AI-Powered Process Mapping] --> B[Describe your workflow]
+    B --> C[AI analyzes and visualizes]
+    C --> D[Get intelligent insights]
+    
+    classDef ai fill:#3b82f6,stroke:#60a5fa,stroke-width:2px,color:#fff
+    class A,C,D ai`;
+  }
+  
+  const lines = [
+    'graph TD',
+    '    classDef stepNode fill:#0ea5e9,stroke:#67e8f9,stroke-width:2px,color:#fff',
+    '    classDef riskNode fill:#ef4444,stroke:#f87171,stroke-width:2px,color:#fff',
+    '    classDef autoNode fill:#10b981,stroke:#34d399,stroke-width:2px,color:#fff',
+    '    classDef aiNode fill:#8b5cf6,stroke:#a78bfa,stroke-width:2px,color:#fff'
+  ];
+  
+  let prevId = null;
+  
+  steps.forEach((step, index) => {
+    const nodeId = `S${index + 1}`;
+    const cleanStep = step.replace(/"/g, '\\"').substring(0, 40);
+    
+    // AI-enhanced node classification
+    let nodeClass = 'stepNode';
+    let icon = '';
+    
+    // Check AI analysis for this step
+    if (simData.scores && simData.scores[index]) {
+      const stepAnalysis = simData.scores[index].ai_assessment;
+      if (stepAnalysis) {
+        if (stepAnalysis.automation_potential === 'high') {
+          nodeClass = 'autoNode';
+          icon = '🤖 ';
+        } else if (stepAnalysis.bottleneck_likelihood === 'high') {
+          nodeClass = 'riskNode'; 
+          icon = '⚠️ ';
+        }
+      }
+    }
+    
+    // Check for AI-related steps
+    if (step.toLowerCase().includes('ai') || step.toLowerCase().includes('intelligent')) {
+      nodeClass = 'aiNode';
+      icon = '🧠 ';
+    }
+    
+    lines.push(`    ${nodeId}["${icon}${index + 1}. ${cleanStep}"]:::${nodeClass}`);
+    
+    if (prevId) {
+      lines.push(`    ${prevId} --> ${nodeId}`);
+    }
+    
+    prevId = nodeId;
+  });
+  
+  return lines.join('\n');
+}
+
+// Enhanced simulation
+document.getElementById('simulateBtn').addEventListener('click', async () => {
+  document.getElementById('simulateBtn').textContent = '🧠 AI Analyzing...';
   await refreshDiagram();
+  await refreshAIIntelligence();
+  document.getElementById('simulateBtn').textContent = '🔮 AI Simulate';
 });
 
-async function refreshDiagram(){
-  const [pRes, sRes] = await Promise.all([
-    fetch('/api/conversations/1/latest_process'),
-    fetch('/api/conversations/1/simulate?scale=' + encodeURIComponent(document.getElementById('simSlider').value))
-  ]);
-  const p = await pRes.json(); const sim = await sRes.json();
-  document.getElementById('cycleTime').textContent = 'Predicted cycle time: ' + (sim.cycle_time_hours?.toFixed ? sim.cycle_time_hours.toFixed(1) : sim.cycle_time_hours) + ' h';
-  const code = buildMermaid(p, sim);
-  const target = document.getElementById('mermaid');
-  target.textContent = code;
-  mermaid.run({nodes:[target]});
+// Export graph function
+function exportGraph() {
+  const svg = document.querySelector('#mermaidContainer svg');
+  if (!svg) {
+    alert('No graph to export. Please generate a process first.');
+    return;
+  }
+  
+  const svgData = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'ai-enhanced-process-map.svg';
+  link.click();
+  
+  URL.revokeObjectURL(url);
 }
 
-function buildMermaid(p, sim){
-  const steps = Array.isArray(p.steps)? p.steps : [];
-  if (!steps.length) return "flowchart LR\\nA[Start]-->B[Describe a task]";
-  const lines = ["flowchart TD",
-    "classDef step fill:#0ea5e9,stroke:#67e8f9,stroke-width:1px,color:#06223a;",
-    "classDef clickable stroke-dasharray: 3 2;"];
-  let prev=null; steps.forEach((s,i)=>{ const id='S'+(i+1); lines.push(`${id}["${i+1}. ${s.replace(/"/g,'\\"')}"]:::step clickable`); if(prev) lines.push(`${prev}-->${id}`); prev=id; });
-  return lines.join("\\n");
-}
-
-refreshDiagram(); // first load
+// Initialize the interface
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('content').focus();
+  switchTab('chat');
+  
+  // Auto-refresh AI intelligence every 30 seconds if AI panel is visible
+  setInterval(() => {
+    if (document.getElementById('ai-panel').style.display !== 'none') {
+      refreshAIIntelligence();
+    }
+  }, 30000);
+});
 </script>
 {% endblock %}
