@@ -236,9 +236,12 @@ async def analyze_project(project_id: int, db: Session = Depends(get_db)):
     # Save insights to database
     insights = []
     for insight_data in analysis_result.get('insights', []):
+        # Only extract expected fields and ensure correct types
         insight = ProjectInsight(
             project_id=project_id,
-            **insight_data
+            title=insight_data.get('title'),
+            description=insight_data.get('description'),
+            confidence=int(insight_data.get('confidence', 0)) if insight_data.get('confidence') is not None else None
         )
         db.add(insight)
         insights.append(insight)
