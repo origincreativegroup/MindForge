@@ -33,7 +33,7 @@ down:
 	docker compose down
 
 seed:
-        python ops/seed.py
+	python ops/seed.py
 
 hooks:
         pre-commit install
