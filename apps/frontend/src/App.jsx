@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ProcessVisualizer from './components/ProcessVisualizer.jsx';
 import BusinessDashboard from './components/BusinessDashboard.jsx';
+import CreativeWorkspace from './components/CreativeWorkspace.jsx';
 import './components/BusinessDashboard.css';
 
 export default function App() {
@@ -22,6 +23,9 @@ export default function App() {
         <div className="sidebar-item" onClick={() => setActiveView('business')}>
           💼 Business Partner
         </div>
+        <div className="sidebar-item" onClick={() => setActiveView('creative')}>
+          🎨 Creative Workspace
+        </div>
       </aside>
       <main className="main">
         {activeView === 'chat' ? (
@@ -35,6 +39,8 @@ export default function App() {
               </div>
             </div>
           </>
+        ) : activeView === 'creative' ? (
+          <CreativeWorkspace />
         ) : (
           <BusinessDashboard />
         )}
