@@ -296,3 +296,66 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
+
+
+# ---------------------------------------------------------------------------
+# Project questioner schemas
+# ---------------------------------------------------------------------------
+
+# Import enums from models to avoid duplication
+from .services.models import ProjectType, QuestionType
+
+
+class ProjectQuestionCreate(BaseModel):
+    project_id: int
+    question: str
+    question_type: QuestionType
+    options: Optional[List[str]] = None
+    priority: int = 2
+
+
+class ProjectQuestionOut(ProjectQuestionCreate):
+    id: int
+    is_answered: bool = False
+    answer: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class CaseyQuestionResponse(BaseModel):
+    question_id: int
+    question: str
+    question_type: QuestionType
+    options: Optional[List[str]] = None
+    context: str
+    priority: int
+    follow_up_questions: Optional[List[str]] = None
+
+
+class CreativeProjectCreate(BaseModel):
+    title: str
+    short_tagline: Optional[str] = None
+    project_type: ProjectType
+    status: ProjectStatus = ProjectStatus.pitch
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    client_id: Optional[int] = None
+    disciplines: List[str] = []
+    skill_ids: List[int] = []
+    primary_tool_ids: List[int] = []
+    tag_ids: List[int] = []
+    collection_ids: List[int] = []
+    hero_asset_id: Optional[int] = None
+    extracted_text: Optional[str] = None
+    dimensions: Optional[Dict[str, int]] = None
+    color_palette: Optional[List[str]] = None
+
+
+class CreativeProjectOut(CreativeProjectCreate):
+    id: int
+    questions: List[ProjectQuestionOut] = []
+
+    class Config:
+        orm_mode = True

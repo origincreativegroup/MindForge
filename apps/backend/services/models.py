@@ -324,3 +324,64 @@ class LearningGoal(Base):
     due_date = Column(Date, nullable=True)
 
     skill = relationship("Skill", back_populates="goals")
+
+
+# ---------------------------------------------------------------------------
+# Project questioner models
+# ---------------------------------------------------------------------------
+
+
+class ProjectType(PyEnum):
+    """Types of creative projects."""
+    
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_graphic = "print_graphic"
+    video = "video"
+    branding = "branding"
+
+
+class QuestionType(PyEnum):
+    """Types of questions that can be asked."""
+    
+    choice = "choice"
+    text = "text"
+    boolean = "boolean"
+
+
+class CreativeProject(Base):
+    __tablename__ = "creative_projects"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String, nullable=False, index=True)
+    short_tagline = Column(String, nullable=True)
+    project_type = Column(Enum(ProjectType), nullable=False)
+    status = Column(Enum(ProjectStatus), default=ProjectStatus.pitch, nullable=False)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    disciplines = Column(JSON, default=list)
+    hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
+    extracted_text = Column(Text, nullable=True)
+    dimensions = Column(JSON, nullable=True)
+    color_palette = Column(JSON, nullable=True)
+
+    client = relationship("Client")
+    hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
+    questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectQuestion(Base):
+    __tablename__ = "project_questions"
+
+    id = Column(Integer, primary_key=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"))
+    question = Column(Text, nullable=False)
+    question_type = Column(Enum(QuestionType), nullable=False)
+    options = Column(JSON, nullable=True)
+    priority = Column(Integer, default=2)
+    is_answered = Column(Boolean, default=False)
+    answer = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    project = relationship("CreativeProject", back_populates="questions")
