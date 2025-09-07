@@ -10,3 +10,6 @@ dist/
 build/
 .env
 **/target/
+
+# Test files (keep only production tests)
+test_reporting.py
