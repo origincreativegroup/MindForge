@@ -59,7 +59,7 @@ if not USE_DATABASE:
     # Enhanced state management for simple mode
     STATE = {
         "messages": [],
-        "process": {"steps": [], "actors": [], "tools": [], "decisions": []},
+        "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
         "conversation_count": 0,
         "session_analytics": {
             "start_time": time.time(),
@@ -140,7 +140,7 @@ if not USE_DATABASE:
 
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""
-        elements = {"steps": [], "actors": [], "tools": []}
+        elements = {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
 
         # Extract steps (look for action words and sequences)
         step_patterns = [
@@ -289,7 +289,7 @@ if not USE_DATABASE:
         base_process = STATE["process"]
 
         if not any(base_process.values()):
-            return {"steps": [], "actors": [], "tools": [], "decisions": []}
+            return {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
 
         metrics = calculate_process_metrics()
 
@@ -504,7 +504,7 @@ def reset_conversation():
     """Reset conversation state"""
     if not USE_DATABASE:
         STATE["messages"].clear()
-        STATE["process"] = {"steps": [], "actors": [], "tools": [], "decisions": []}
+        STATE["process"] = {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []}
         STATE["session_analytics"]["total_interactions"] = 0
         STATE["session_analytics"]["start_time"] = time.time()
 

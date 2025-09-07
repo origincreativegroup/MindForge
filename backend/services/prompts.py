@@ -27,7 +27,7 @@ Now ask exactly ONE next question that moves us closer to a clean process map
 
 # Process extraction prompts
 EXTRACTOR_SYSTEM = """You extract business-process structure from text.
-Return STRICT JSON ONLY with keys: steps, actors, tools, decisions (each an array of strings).
+Return STRICT JSON ONLY with keys: steps, actors, tools, decisions, inputs, outputs (each an array of strings).
 Be terse, deduplicate, preserve order if obvious, and avoid commentary."""
 
 def extractor_user(history_plain: str) -> str:
@@ -38,7 +38,7 @@ TEXT:
 {history_plain}
 
 Return JSON exactly:
-{{"steps": [...], "actors": [...], "tools": [...], "decisions": [...]}}"""
+{{"steps": [...], "actors": [...], "tools": [...], "decisions": [...], "inputs": [...], "outputs": [...]}}"""
 
 # Mirror/understanding prompts
 MIRROR_SYSTEM = """You restate and verify understanding.

@@ -38,6 +38,8 @@ class ProcessMap(Base):
     actors = Column(JSON, default=list)
     tools = Column(JSON, default=list)
     decisions = Column(JSON, default=list)
+    inputs = Column(JSON, default=list)
+    outputs = Column(JSON, default=list)
     raw_chunks = Column(JSON, default=list)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

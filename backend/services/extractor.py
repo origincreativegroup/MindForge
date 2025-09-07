@@ -31,6 +31,8 @@ def _regex_fallback_extract(texts: List[str]) -> Dict[str, List[str]]:
         "actors": [a.lower() for a in actors],
         "tools": [t.lower() for t in tools],
         "decisions": [d.strip() for d in decisions if d.strip()],
+        "inputs": [],
+        "outputs": [],
         "raw_chunks": texts[-20:] if texts else []
     }
 
@@ -59,6 +61,8 @@ def _try_json(s: str) -> Dict[str, List[str]]:
         "actors": [str(x).strip() for x in data.get("actors", []) if str(x).strip()],
         "tools": [str(x).strip() for x in data.get("tools", []) if str(x).strip()],
         "decisions": [str(x).strip() for x in data.get("decisions", []) if str(x).strip()],
+        "inputs": [str(x).strip() for x in data.get("inputs", []) if str(x).strip()],
+        "outputs": [str(x).strip() for x in data.get("outputs", []) if str(x).strip()],
     }
     return out
 
@@ -68,7 +72,7 @@ def extract_process(texts: List[str]) -> Dict[str, List[str]]:
     Falls back to regex extraction if LLM is unavailable.
     """
     if not texts:
-        return {"steps": [], "actors": [], "tools": [], "decisions": [], "raw_chunks": []}
+        return {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": [], "raw_chunks": []}
 
     # Try LLM extraction first
     try:
@@ -84,7 +88,7 @@ def extract_process(texts: List[str]) -> Dict[str, List[str]]:
         if parsed and any(parsed.values()):
             parsed["raw_chunks"] = [t for t in texts if t.strip()][-20:]
             # Limit sizes
-            for k in ("steps", "actors", "tools", "decisions"):
+            for k in ("steps", "actors", "tools", "decisions", "inputs", "outputs"):
                 parsed[k] = parsed[k][:25]
             return parsed
     except Exception as e:
@@ -97,5 +101,7 @@ def extract_process(texts: List[str]) -> Dict[str, List[str]]:
         "actors": baseline.get("actors", [])[:25],
         "tools": baseline.get("tools", [])[:25],
         "decisions": baseline.get("decisions", [])[:25],
+        "inputs": baseline.get("inputs", [])[:25],
+        "outputs": baseline.get("outputs", [])[:25],
         "raw_chunks": baseline.get("raw_chunks", [])[-20:],
     }
