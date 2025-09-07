@@ -3,15 +3,15 @@ from __future__ import annotations
 """Minimal YAML parser for Process Definition Language.
 
 This module originally relied on :mod:`pyyaml` for loading YAML process
-definitions.  The execution environment used for the kata does not provide
+definitions. The execution environment used for the kata does not provide
 external dependencies, so importing :mod:`yaml` raises ``ModuleNotFoundError``
-and the whole test-suite fails during collection.  To keep the public API the
+and the whole test-suite fails during collection. To keep the public API the
 same while avoiding the heavy dependency, we include a tiny, self-contained
-parser that understands just enough YAML for the unit tests.  If PyYAML is
+parser that understands just enough YAML for the unit tests. If PyYAML is
 available it will be used, otherwise the fallback parser is employed.
 
 The supported subset covers mappings, lists of mappings and basic scalar
-values.  This is sufficient for the sample PDL snippets used in the tests.
+values. This is sufficient for the sample PDL snippets used in the tests.
 """
 
 from typing import Any, Dict, List
@@ -41,6 +41,8 @@ def _parse_step(raw: Dict[str, Any]) -> Step:
         condition=raw.get("condition"),
         branches=branches,
     )
+
+
 def _fallback_load(text: str) -> Dict[str, Any]:
     """Very small YAML loader used when PyYAML isn't available.
 
@@ -99,9 +101,10 @@ def parse(text: str) -> Process:
 
     data = _load(text)
     if not isinstance(data, dict) or "process" not in data:
-        raise PDLParseError("Root must contain 'process')")
+        raise PDLParseError("Root must contain 'process'")
     pdata = data["process"]
     name = pdata.get("name", "")
     raw_steps: List[Dict[str, Any]] = pdata.get("steps", [])
     steps = [_parse_step(s) for s in raw_steps]
     return Process(name=name, steps=steps)
+
