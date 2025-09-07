@@ -2,6 +2,7 @@ import os
 import time
 import asyncio
 import re
+import random
 from pathlib import Path
 from typing import Dict, List
 from fastapi import FastAPI, Request, UploadFile, File
@@ -115,14 +116,6 @@ if not USE_DATABASE:
         return prefix + question
 
     def generate_smart_chips(text: str) -> List[str]:
-        """Return simple follow-up suggestions to keep the chat moving."""
-        # For now these are static prompts generated server-side. They can be
-        # swapped out for an LLM-powered suggestion engine later.
-        return [
-            "Can you elaborate?",
-            "Who is involved?",
-            "What tools are used?",
-        ]
 
     def extract_process_elements(text: str) -> Dict[str, List[str]]:
         """Extract process steps, actors, and tools from text"""

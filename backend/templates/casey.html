@@ -56,7 +56,7 @@
         <article class="flex gap-3 items-end {{ 'justify-end' if is_user }}">
           {% if is_user %}
             <div class="max-w-[80%]">
-              <div class="rounded-bubble rounded-tr-sm bg-you border border-border shadow-card px-3 py-2">
+              <div class="bubble rounded-bubble rounded-tr-sm bg-you border border-border shadow-card px-3 py-2">
                 {{ m.html|safe }}
               </div>
               <div class="mt-1 text-[11px] text-muted text-right">
@@ -67,7 +67,7 @@
           {% else %}
             <div class="shrink-0 grid place-items-center h-9 w-9 rounded-full border border-blue-800 bg-panel shadow-[0_0_0_2px_rgba(108,169,255,.15)]">🤖</div>
             <div class="max-w-[80%]">
-              <div class="rounded-bubble rounded-tl-sm bg-ai border border-border shadow-card px-3 py-2">
+              <div class="bubble casey-msg rounded-bubble rounded-tl-sm bg-ai border border-border shadow-card px-3 py-2">
                 {{ m.html|safe }}
               </div>
               <div class="mt-1 text-[11px] text-muted">
@@ -142,6 +142,23 @@
     const scrollToBottom = () => { thread.scrollTop = thread.scrollHeight; };
     scrollToBottom();
 
+    const typeCasey = () => {
+      const articles = thread.querySelectorAll('article');
+      const last = Array.from(articles).reverse().find(a => !a.classList.contains('justify-end'));
+      if (!last) return;
+      const bubble = last.querySelector('.casey-msg');
+      if (!bubble) return;
+      const full = bubble.innerHTML;
+      bubble.innerHTML = '';
+      let i = 0;
+      const timer = setInterval(() => {
+        bubble.innerHTML = full.slice(0, i);
+        i++;
+        if (i > full.length) clearInterval(timer);
+        scrollToBottom();
+      }, 15);
+    };
+
     // Autosize textarea
     const autosize = () => {
       input.style.height = '24px';
@@ -179,6 +196,7 @@
           fileIn.value = '';
           autosize();
           scrollToBottom();
+          typeCasey();
         } else {
           location.reload(); // fallback
         }
