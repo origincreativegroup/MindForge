@@ -150,6 +150,49 @@ class CaseyProjectQuestioner:
                     "context": "Distribution platform affects format, resolution, and design choices"
                 }
             ],
+            ProjectType.logo_design: [
+                {
+                    "question": "What type of business or organization is this logo for?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Business type affects design approach and visual style appropriateness"
+                },
+                {
+                    "question": "What style are you aiming for?",
+                    "type": QuestionType.choice,
+                    "options": ["Modern/Minimalist", "Classic/Traditional", "Creative/Artistic", "Corporate/Professional", "Playful/Fun", "Luxurious/Premium"],
+                    "priority": 1,
+                    "context": "Logo style should align with brand personality and target audience"
+                },
+                {
+                    "question": "Do you have any color preferences or restrictions?",
+                    "type": QuestionType.text,
+                    "priority": 2,
+                    "context": "Color choices affect brand perception and practical applications"
+                }
+            ],
+            ProjectType.ui_design: [
+                {
+                    "question": "What type of application or interface is this?",
+                    "type": QuestionType.choice,
+                    "options": ["Mobile App", "Web App", "Desktop Software", "Dashboard", "E-commerce", "SaaS Platform", "Other"],
+                    "priority": 1,
+                    "context": "Interface type determines design patterns and user expectations"
+                },
+                {
+                    "question": "Who are the primary users?",
+                    "type": QuestionType.choice,
+                    "options": ["General Public", "Business Professionals", "Developers", "Designers", "Students", "Elderly", "Children"],
+                    "priority": 1,
+                    "context": "User demographics affect usability requirements and design choices"
+                },
+                {
+                    "question": "What's the main task users need to accomplish?",
+                    "type": QuestionType.text,
+                    "priority": 2,
+                    "context": "Primary task affects information hierarchy and interaction design"
+                }
+            ],
             ProjectType.branding: [
                 {
                     "question": "What type of branding element is this?",

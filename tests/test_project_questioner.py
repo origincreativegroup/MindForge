@@ -15,7 +15,7 @@ def test_casey_project_questioner_initialization():
     questioner = CaseyProjectQuestioner()
     assert questioner.question_templates is not None
     assert questioner.follow_up_logic is not None
-    assert len(questioner.question_templates) == 5  # 5 project types
+    assert len(questioner.question_templates) == 7  # 7 project types (added logo_design and ui_design from master)
 
 
 def test_get_base_questions_for_website_mockup():

@@ -298,12 +298,50 @@ class SkillGap(BaseModel):
     gap: int
 
 
-# ---------------------------------------------------------------------------
-# Project questioner schemas
+# Creative project schemas for the creative projects router
 # ---------------------------------------------------------------------------
 
-# Import enums from models to avoid duplication
-from .services.models import ProjectType, QuestionType
+class ProjectType(str, Enum):
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_graphic = "print_graphic"
+    logo_design = "logo_design"
+    ui_design = "ui_design"
+    video = "video"
+    branding = "branding"
+
+
+# Import QuestionType and ProjectStatus from models for the project questioner
+from .services.models import QuestionType, ProjectStatus
+
+
+class CreativeProjectCreate(BaseModel):
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+    original_filename: str
+    file_path: str
+    file_size: int
+    mime_type: Optional[str] = None
+
+
+class CreativeProject(BaseModel):
+    id: int
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+    original_filename: str
+    file_path: str
+    file_size: int
+    mime_type: Optional[str] = None
+    dimensions: Optional[str] = None
+    color_palette: Optional[List[str]] = None
+    extracted_text: Optional[str] = None
+    tags: Optional[List[str]] = None
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
 
 
 class ProjectQuestionCreate(BaseModel):
@@ -318,12 +356,29 @@ class ProjectQuestionOut(ProjectQuestionCreate):
     id: int
     is_answered: bool = False
     answer: Optional[str] = None
+    answered_at: Optional[datetime] = None
     created_at: datetime
 
     class Config:
         orm_mode = True
 
 
+# Keep the old ProjectQuestion schema for backward compatibility
+class ProjectQuestion(BaseModel):
+    id: int
+    project_id: int
+    question: str
+    question_type: str
+    is_answered: bool = False
+    answer: Optional[str] = None
+    answered_at: Optional[datetime] = None
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+# Project questioner schemas (Casey functionality)
 class CaseyQuestionResponse(BaseModel):
     question_id: int
     question: str
@@ -334,7 +389,8 @@ class CaseyQuestionResponse(BaseModel):
     follow_up_questions: Optional[List[str]] = None
 
 
-class CreativeProjectCreate(BaseModel):
+# Enhanced creative project schemas for questioner (alternative to existing)
+class CreativeProjectForQuestioner(BaseModel):
     title: str
     short_tagline: Optional[str] = None
     project_type: ProjectType
@@ -353,9 +409,77 @@ class CreativeProjectCreate(BaseModel):
     color_palette: Optional[List[str]] = None
 
 
-class CreativeProjectOut(CreativeProjectCreate):
+class CreativeProjectOutForQuestioner(CreativeProjectForQuestioner):
     id: int
     questions: List[ProjectQuestionOut] = []
 
     class Config:
         orm_mode = True
+
+
+# Existing project schemas for backward compatibility
+class ProjectQuestionUpdate(BaseModel):
+    answer: str
+
+
+class ProjectFileCreate(BaseModel):
+    project_id: int
+    filename: str
+    file_path: str
+    file_type: str
+    file_size: int
+
+
+class ProjectFile(BaseModel):
+    id: int
+    project_id: int
+    filename: str
+    file_path: str
+    file_type: str
+    file_size: int
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectInsightCreate(BaseModel):
+    project_id: int
+    insight_type: str
+    title: str
+    description: str
+    confidence: float
+
+
+class ProjectInsight(BaseModel):
+    id: int
+    project_id: int
+    insight_type: str
+    title: str
+    description: str
+    confidence: float
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectUploadResponse(BaseModel):
+    project: CreativeProject
+    questions: List[ProjectQuestion]
+    next_steps: List[str]
+
+
+class CaseyQuestionResponse(BaseModel):
+    question: str
+    question_type: str
+    context: Optional[str] = None
+
+
+class ProjectAnalysisResponse(BaseModel):
+    project_id: int
+    analysis_complete: bool
+    insights: List[ProjectInsight]
+    suggestions: List[str]
+    color_palette: Optional[List[str]] = None
+    dimensions: Optional[str] = None
