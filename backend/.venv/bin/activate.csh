@@ -9,6 +9,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 deactivate nondestructive
 
 setenv VIRTUAL_ENV "/Users/sorigin/Documents/mindforge-mvp 7/backend/.venv"
+setenv VIRTUAL_ENV "/Users/sorigin/Documents/GitHub/MindForge/backend/.venv"
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/bin:$PATH"
