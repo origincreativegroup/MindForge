@@ -14,11 +14,9 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - run: npm install -g pnpm@8
       - run: pnpm install
-      - run: pnpm test || echo "no tests"
+      - run: pnpm test --if-present
       - run: mkdir -p artifact && echo "placeholder" > artifact/placeholder.txt
       - uses: actions/upload-artifact@v4
         if: always()
