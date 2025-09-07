@@ -1,0 +1,5 @@
+{
+  "name": "mindforge",
+  "private": true,
+  "workspaces": ["apps/frontend", "packages/*"]
+}
