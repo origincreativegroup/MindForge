@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from .routers import workforce
 import asyncio, re, time
 
 BASE = Path(__file__).parent
@@ -16,6 +17,7 @@ app = FastAPI(title="Casey · MindForge", debug=True)
 (BASE/"templates").mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(BASE/"static")), name="static")
 templates = Jinja2Templates(directory=str(BASE/"templates"))
+app.include_router(workforce.router, prefix="/api")
 # Add this line near the top of your app.py file, right after the import statements
 # and before the USE_DATABASE check:
 
