@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Casey • MindForge</title>
+  <!-- Tailwind via CDN (for production, build locally) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg:      '#0b0f14',
+            panel:   '#121824',
+            border:  '#223049',
+            text:    '#e7eefc',
+            muted:   '#8c97aa',
+            accent:  '#6aa6ff',
+            ai:      '#0d253a',
+            you:     '#1f2937',
+            codebg:  '#0a1220',
+            coderim: '#1b2a49',
+          },
+          boxShadow: {
+            card: '0 8px 30px rgba(0,0,0,.35)',
+            glow: '0 8px 18px rgba(106,166,255,.25)',
+          },
+          borderRadius: {
+            bubble: '16px'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-screen bg-bg text-text">
+  <div class="mx-auto h-full max-w-5xl grid grid-rows-[auto,1fr,auto]">
+    <!-- Header -->
+    <header class="sticky top-0 z-10 backdrop-blur bg-panel/80 border-b border-border">
+      <div class="flex items-center gap-3 p-4">
+        <div class="h-7 w-7 rounded-lg bg-gradient-to-br from-sky-300 to-blue-700 shadow [box-shadow:0_4px_14px_rgba(87,149,255,.35)]"></div>
+        <div>
+          <h1 class="text-sm font-semibold tracking-wide">Chat with Casey</h1>
+          <p class="text-xs text-muted">Process intelligence that talks like a person.</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Thread -->
+    <main id="thread" class="overflow-y-auto p-4 space-y-3" aria-live="polite">
+      {# Example Jinja rendering of messages (ensure m.html is safe HTML) #}
+      {% for m in messages %}
+        {% set is_user = (m.role == 'user') %}
+        <article class="flex gap-3 items-end {{ 'justify-end' if is_user }}">
+          {% if is_user %}
+            <div class="max-w-[80%]">
+              <div class="rounded-bubble rounded-tr-sm bg-you border border-border shadow-card px-3 py-2">
+                {{ m.html|safe }}
+              </div>
+              <div class="mt-1 text-[11px] text-muted text-right">
+                {{ m.created_at }} · You
+              </div>
+            </div>
+            <div class="shrink-0 grid place-items-center h-9 w-9 rounded-full border border-border bg-panel">🧑</div>
+          {% else %}
+            <div class="shrink-0 grid place-items-center h-9 w-9 rounded-full border border-blue-800 bg-panel shadow-[0_0_0_2px_rgba(108,169,255,.15)]">🤖</div>
+            <div class="max-w-[80%]">
+              <div class="rounded-bubble rounded-tl-sm bg-ai border border-border shadow-card px-3 py-2">
+                {{ m.html|safe }}
+              </div>
+              <div class="mt-1 text-[11px] text-muted">
+                {{ m.created_at }} · Casey
+              </div>
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </main>
+
+    <!-- Composer -->
+    <footer class="sticky bottom-0 bg-panel/90 backdrop-blur border-t border-border p-3">
+      <div id="typing" class="hidden text-[12px] text-muted mb-2">
+        <span class="inline-block h-3 w-28 rounded bg-[#1a2234] animate-pulse"></span>
+      </div>
+
+      <form id="chatForm" action="{{ url_for('chat') }}" method="post" enctype="multipart/form-data"
+            class="flex items-end gap-2 bg-panel border border-border rounded-2xl p-2 shadow-card">
+        <label for="file" class="cursor-pointer px-2 py-2 text-muted border border-border rounded-xl hover:bg-bg/60">＋</label>
+        <input id="file" name="file" type="file" class="hidden" />
+
+        <textarea id="input" name="message" rows="1" placeholder="Write like you’re texting a teammate…"
+                  class="min-h-6 max-h-44 w-full resize-none bg-transparent outline-none text-sm leading-6 placeholder:text-muted"></textarea>
+
+        <button id="sendBtn" type="submit"
+                class="shrink-0 rounded-xl bg-accent text-[#051022] font-semibold px-4 py-2 shadow-glow disabled:opacity-60">
+          Send ↵
+        </button>
+      </form>
+
+      <div id="drop" class="hidden mt-2 border border-dashed border-border rounded-xl p-2 text-muted text-xs">
+        Drop files to attach…
+      </div>
+    </footer>
+  </div>
+
+  <!-- Minimal prose styles for markdown/code in bubbles -->
+  <style>
+    .rounded-bubble{border-radius:16px}
+    .rounded-tr-sm{border-top-right-radius:8px}
+    .rounded-tl-sm{border-top-left-radius:8px}
+    .bubble a{color:#6aa6ff;text-decoration:none}
+    .bubble pre, .bubble code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size: 13px;
+    }
+    .bubble pre{
+      background:#0a1220;border:1px solid #1b2a49;border-radius:12px;padding:10px;overflow:auto;margin:.5rem 0;
+    }
+    .bubble code:not(pre code){
+      background:#0a1220;border:1px solid #1b2a49;border-radius:6px;padding:2px 6px;
+    }
+  </style>
+
+  <script>
+    const thread = document.getElementById('thread');
+    const input  = document.getElementById('input');
+    const form   = document.getElementById('chatForm');
+    const sendBtn= document.getElementById('sendBtn');
+    const typing = document.getElementById('typing');
+    const fileIn = document.getElementById('file');
+    const drop   = document.getElementById('drop');
+
+    const scrollToBottom = () => { thread.scrollTop = thread.scrollHeight; };
+    scrollToBottom();
+
+    // Autosize textarea
+    const autosize = () => {
+      input.style.height = '24px';
+      input.style.height = Math.min(input.scrollHeight, 176) + 'px';
+    };
+    input.addEventListener('input', autosize);
+
+    // Enter sends, Shift+Enter = newline
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    // Async submit (progressive enhancement)
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text && !fileIn.files.length) return;
+
+      sendBtn.disabled = true;
+      typing.classList.remove('hidden');
+
+      try {
+        const data = new FormData(form);
+        const res  = await fetch(form.action, { method: 'POST', body: data });
+        const html = await res.text();
+
+        const doc       = new DOMParser().parseFromString(html, 'text/html');
+        const newThread = doc.getElementById('thread');
+        if (newThread) {
+          thread.innerHTML = newThread.innerHTML;
+          input.value = '';
+          fileIn.value = '';
+          autosize();
+          scrollToBottom();
+        } else {
+          location.reload(); // fallback
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Message failed.');
+      } finally {
+        typing.classList.add('hidden');
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    });
+
+    // Drag & drop
+    ['dragenter','dragover'].forEach(ev => document.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.remove('hidden');
+    }));
+    ['dragleave','drop'].forEach(ev => document.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.add('hidden');
+    }));
+    document.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files?.length) {
+        fileIn.files = e.dataTransfer.files;
+      }
+    });
+
+    // Keep latest visible on load
+    window.addEventListener('load', scrollToBottom);
+  </script>
+</body>
+</html>

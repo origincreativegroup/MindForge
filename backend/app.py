@@ -390,26 +390,47 @@ if not USE_DATABASE:
             )
 
 # Common routes for both modes
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    """Main chat interface"""
-    # Create a mock conversation object for the template
-    class MockConversation:
-        def __init__(self):
-            self.id = 1
-            if USE_DATABASE:
-                self.messages = []
-                self.processes = []
-            else:
-                self.messages = STATE["messages"]
-                self.processes = [STATE["process"]] if STATE["process"]["steps"] else []
+from datetime import datetime
 
-    conv = MockConversation()
-    return templates.TemplateResponse("chat.html", {
-        "request": request,
-        "title": "Casey · MindForge",
-        "conv": conv
-    })
+
+@app.get("/", response_class=HTMLResponse)
+def casey_chat(request: Request):
+    """Render the Casey chat interface with stored messages."""
+    return templates.TemplateResponse(
+        "casey.html",
+        {"request": request, "messages": STATE["messages"]},
+    )
+
+
+@app.post("/chat", response_class=HTMLResponse)
+async def chat(request: Request, message: str = Form("")):
+    """Simple chat handler that echoes back adaptive replies."""
+    text = message.strip()
+    if text:
+        STATE["messages"].append(
+            {
+                "role": "user",
+                "html": text,
+                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+            }
+        )
+
+        if "generate_adaptive_reply" in globals():
+            reply = generate_adaptive_reply(text)
+        else:
+            reply = f"You said: {text}"
+
+        STATE["messages"].append(
+            {
+                "role": "assistant",
+                "html": reply,
+                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+            }
+        )
+
+    return templates.TemplateResponse(
+        "casey.html", {"request": request, "messages": STATE["messages"]}
+    )
 
 @app.get("/healthz")
 def health_check():
