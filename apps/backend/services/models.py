@@ -408,3 +408,63 @@ class ProjectInsight(Base):
 
     # Relationships
     project = relationship("CreativeProject", back_populates="insights")
+
+
+# ---------------------------------------------------------------------------
+# Real-time collaboration models
+# ---------------------------------------------------------------------------
+
+class TeamMember(Base):
+    __tablename__ = "team_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    user_id = Column(Integer, nullable=False)  # External user ID reference
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    role = Column(String, nullable=False)  # admin, editor, viewer
+    permissions = Column(JSON, nullable=True)
+    joined_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_active = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    project = relationship("CreativeProject")
+    comments = relationship("ProjectComment", back_populates="author", cascade="all, delete-orphan")
+    activities = relationship("ProjectActivity", back_populates="user", cascade="all, delete-orphan")
+
+
+class ProjectComment(Base):
+    __tablename__ = "project_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    author_id = Column(Integer, ForeignKey("team_members.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    comment_type = Column(String, default="general", nullable=False)  # general, feedback, question, suggestion
+    metadata = Column(JSON, nullable=True)  # position, context, etc.
+    is_resolved = Column(Boolean, default=False, nullable=False)
+    resolved_by = Column(Integer, ForeignKey("team_members.id"), nullable=True)
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject")
+    author = relationship("TeamMember", back_populates="comments", foreign_keys=[author_id])
+    resolver = relationship("TeamMember", foreign_keys=[resolved_by])
+
+
+class ProjectActivity(Base):
+    __tablename__ = "project_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("team_members.id"), nullable=False)
+    activity_type = Column(String, nullable=False)  # comment, edit, upload, etc.
+    description = Column(Text, nullable=False)
+    metadata = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject")
+    user = relationship("TeamMember", back_populates="activities")
