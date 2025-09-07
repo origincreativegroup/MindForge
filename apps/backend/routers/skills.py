@@ -2,7 +2,8 @@ from typing import Dict, List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from .. import models, schemas
+from ..services import models
+from .. import schemas
 from ..db import get_db
 from ..services import skill_matrix
 
