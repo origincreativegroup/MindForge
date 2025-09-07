@@ -12,12 +12,14 @@ from sqlalchemy import (
     Date,
     Boolean,
     Enum,
+    Float,
     Table,
     Index,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -154,7 +156,7 @@ class Project(Base):
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
-    assets = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    assets = relationship("Asset", foreign_keys="Asset.project_id", back_populates="project", cascade="all, delete-orphan")
     roles = relationship("Role", back_populates="project", cascade="all, delete-orphan")
     deliverables = relationship("Deliverable", back_populates="project", cascade="all, delete-orphan")
     case_study = relationship("CaseStudy", back_populates="project", uselist=False)
@@ -256,7 +258,7 @@ class Asset(Base):
     nda_group = Column(String, nullable=True)
     expires_at = Column(DateTime, nullable=True)
 
-    project = relationship("Project", back_populates="assets")
+    project = relationship("Project", foreign_keys=[project_id], back_populates="assets")
     rights = relationship("RightsConsent", back_populates="assets")
     whitelist_entries = relationship(
         "AssetWhitelist", back_populates="asset", cascade="all, delete-orphan"
@@ -324,3 +326,122 @@ class LearningGoal(Base):
     due_date = Column(Date, nullable=True)
 
     skill = relationship("Skill", back_populates="goals")
+
+
+# ---------------------------------------------------------------------------
+# Creative project analysis models (for file upload and analysis workflow)
+# ---------------------------------------------------------------------------
+
+
+class ProjectType(PyEnum):
+    """Types of creative projects."""
+    WEBSITE_MOCKUP = "website_mockup"
+    PRINT_GRAPHIC = "print_graphic"
+    SOCIAL_MEDIA = "social_media"
+    VIDEO = "video"
+    BRANDING = "branding"
+    PRESENTATION = "presentation"
+    MOBILE_APP = "mobile_app"
+    OTHER = "other"
+
+
+class CreativeProjectStatus(PyEnum):
+    """Status for creative project analysis workflow."""
+    UPLOADED = "uploaded"
+    ANALYZING = "analyzing"
+    NEEDS_INFO = "needs_info"
+    IN_PROGRESS = "in_progress"
+    REVIEW = "review"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+
+class CreativeProject(Base):
+    __tablename__ = "creative_projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    project_type = Column(Enum(ProjectType), nullable=False)
+    status = Column(Enum(CreativeProjectStatus), default=CreativeProjectStatus.UPLOADED)
+    description = Column(Text)
+
+    # File information
+    original_filename = Column(String(500))
+    file_path = Column(String(1000))
+    file_size = Column(Integer)
+    mime_type = Column(String(100))
+
+    # Project metadata (JSON field for flexible data)
+    project_metadata = Column(JSON, default={})
+
+    # Extracted information
+    extracted_text = Column(Text)
+    color_palette = Column(JSON)  # Array of hex colors
+    dimensions = Column(JSON)     # {"width": 1920, "height": 1080}
+    tags = Column(JSON, default=[])
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
+    files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
+    insights = relationship("ProjectInsight", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectQuestion(Base):
+    __tablename__ = "project_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+
+    question = Column(Text, nullable=False)
+    question_type = Column(String(50))  # text, choice, number, date, file
+    options = Column(JSON)  # For choice questions
+    answer = Column(Text)
+    is_answered = Column(Integer, default=0)  # 0=no, 1=yes
+    priority = Column(Integer, default=1)  # 1=high, 2=medium, 3=low
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    answered_at = Column(DateTime)
+
+    project = relationship("CreativeProject", back_populates="questions")
+
+
+class ProjectFile(Base):
+    __tablename__ = "project_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+
+    filename = Column(String(500), nullable=False)
+    file_path = Column(String(1000), nullable=False)
+    file_type = Column(String(50))  # original, thumbnail, processed, export
+    mime_type = Column(String(100))
+    file_size = Column(Integer)
+
+    # Processing metadata
+    processing_status = Column(String(50), default="pending")
+    processing_metadata = Column(JSON, default={})
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("CreativeProject", back_populates="files")
+
+
+class ProjectInsight(Base):
+    __tablename__ = "project_insights"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+
+    insight_type = Column(String(100))  # design_analysis, brand_compliance, accessibility, etc.
+    title = Column(String(255))
+    description = Column(Text)
+    score = Column(Float)  # 0-1 confidence/quality score
+    data = Column(JSON)    # Detailed insight data
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("CreativeProject", back_populates="insights")
