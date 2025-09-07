@@ -46,10 +46,11 @@ print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features di
 if USE_DATABASE:
     # Import and setup database routers
     try:
-        from routers import conversations, nextq, skills
+        from routers import conversations, nextq, skills, creative_projects
         app.include_router(conversations.router, prefix="/api")
         app.include_router(nextq.router, prefix="/api")
         app.include_router(skills.router, prefix="/api")
+        app.include_router(creative_projects.router)
         print("✅ Database mode enabled - full functionality available")
     except ImportError as e:
         print(f"⚠️  Database imports failed: {e}")

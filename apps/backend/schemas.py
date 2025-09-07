@@ -296,3 +296,134 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
+
+
+# ---------------------------------------------------------------------------
+# Creative project schemas for the creative projects router
+# ---------------------------------------------------------------------------
+
+class ProjectType(str, Enum):
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_graphic = "print_graphic"
+    logo_design = "logo_design"
+    ui_design = "ui_design"
+    branding = "branding"
+
+
+class CreativeProjectCreate(BaseModel):
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+    original_filename: str
+    file_path: str
+    file_size: int
+    mime_type: Optional[str] = None
+
+
+class CreativeProject(BaseModel):
+    id: int
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+    original_filename: str
+    file_path: str
+    file_size: int
+    mime_type: Optional[str] = None
+    dimensions: Optional[str] = None
+    color_palette: Optional[List[str]] = None
+    extracted_text: Optional[str] = None
+    tags: Optional[List[str]] = None
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectQuestionCreate(BaseModel):
+    project_id: int
+    question: str
+    question_type: str
+    is_answered: bool = False
+    answer: Optional[str] = None
+
+
+class ProjectQuestion(BaseModel):
+    id: int
+    project_id: int
+    question: str
+    question_type: str
+    is_answered: bool = False
+    answer: Optional[str] = None
+    answered_at: Optional[datetime] = None
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectQuestionUpdate(BaseModel):
+    answer: str
+
+
+class ProjectFileCreate(BaseModel):
+    project_id: int
+    filename: str
+    file_path: str
+    file_type: str
+    file_size: int
+
+
+class ProjectFile(BaseModel):
+    id: int
+    project_id: int
+    filename: str
+    file_path: str
+    file_type: str
+    file_size: int
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectInsightCreate(BaseModel):
+    project_id: int
+    insight_type: str
+    title: str
+    description: str
+    confidence: float
+
+
+class ProjectInsight(BaseModel):
+    id: int
+    project_id: int
+    insight_type: str
+    title: str
+    description: str
+    confidence: float
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
+
+
+class ProjectUploadResponse(BaseModel):
+    project: CreativeProject
+    questions: List[ProjectQuestion]
+    next_steps: List[str]
+
+
+class CaseyQuestionResponse(BaseModel):
+    question: str
+    question_type: str
+    context: Optional[str] = None
+
+
+class ProjectAnalysisResponse(BaseModel):
+    project_id: int
+    analysis_complete: bool
+    insights: List[ProjectInsight]
+    suggestions: List[str]
+    color_palette: Optional[List[str]] = None
+    dimensions: Optional[str] = None
