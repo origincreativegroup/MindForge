@@ -365,19 +365,21 @@ class ProjectQuestionCreate(ProjectQuestionBase):
 
 class ProjectQuestionUpdate(BaseModel):
     answer: Optional[str] = None
-    is_answered: Optional[bool] = None
+
 
 class ProjectQuestion(ProjectQuestionBase):
     id: int
     project_id: int
     answer: Optional[str] = None
-    is_answered: bool = False
     created_at: datetime
     answered_at: Optional[datetime] = None
 
+    @property
+    def is_answered(self) -> bool:
+        return self.answer is not None and self.answer != ""
+
     class Config:
         orm_mode = True
-
 class CreativeProjectBase(BaseModel):
     name: str
     project_type: ProjectType
