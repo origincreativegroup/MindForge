@@ -38,7 +38,6 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/sorigin/Documents/mindforge-mvp 7/backend/.venv"
 VIRTUAL_ENV="/Users/sorigin/Documents/GitHub/MindForge/backend/.venv"
 export VIRTUAL_ENV
 
