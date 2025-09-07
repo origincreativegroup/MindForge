@@ -7,4 +7,8 @@ SQLAlchemy==2.0.35
 itsdangerous==2.2.0
 httpx==0.27.2
 pytest==8.2.0
-PyYAML==6.0
+# Additional dependencies for full functionality
+orjson==3.9.15
+pypdf==4.0.1
+# Optional for better performance (fallback to stdlib json if not available)
+python-dotenv==1.0.0
