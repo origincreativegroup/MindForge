@@ -49,7 +49,7 @@ export default function ProcessVisualizer() {
 
     const link = svg
       .append('g')
-      .attr('stroke', '#999')
+      .attr('stroke', '#555')
       .selectAll('line')
       .data(data.edges)
       .join('line');
@@ -60,7 +60,7 @@ export default function ProcessVisualizer() {
       .data(data.nodes)
       .join('circle')
       .attr('r', 20)
-      .attr('fill', '#69b3a2')
+      .attr('fill', '#10a37f')
       .call(
         d3
           .drag()
@@ -88,7 +88,8 @@ export default function ProcessVisualizer() {
       .text((d) => d.label)
       .attr('text-anchor', 'middle')
       .attr('dy', 4)
-      .style('pointer-events', 'none');
+      .style('pointer-events', 'none')
+      .style('fill', '#fff');
 
     simulation.on('tick', () => {
       link
@@ -116,11 +117,21 @@ export default function ProcessVisualizer() {
 
   return (
     <div style={{ flex: 1, position: 'relative' }}>
-      <svg ref={svgRef}></svg>
+      <svg ref={svgRef} style={{ background: '#212121' }}></svg>
       <AnnotationLayer annotations={annotations} />
       <button
         onClick={exportSVG}
-        style={{ position: 'absolute', top: 10, right: 10 }}
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          background: '#2a2a2a',
+          color: '#e0e0e0',
+          border: 'none',
+          padding: '6px 12px',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}
       >
         Export SVG
       </button>
