@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import BusinessDashboard from './components/BusinessDashboard.jsx';
 import CreativeWorkspace from './components/CreativeWorkspace.jsx';
+import ProcessVisualizer from './components/ProcessVisualizer.jsx';
 import './components/BusinessDashboard.css';
 
 export default function App() {
@@ -46,5 +48,3 @@ export default function App() {
     </div>
   );
 }
-
-export default App;
