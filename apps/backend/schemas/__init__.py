@@ -26,6 +26,13 @@ class ProjectQuestionCreate:
 
 
 @dataclass
+class ProjectQuestionUpdate:
+    """Schema used when updating a project question with an answer."""
+
+    answer: str
+
+
+@dataclass
 class CaseyQuestionResponse:
     """Represents a question returned to the Casey UI."""
 
@@ -38,5 +45,51 @@ class CaseyQuestionResponse:
     follow_up_questions: Optional[List[str]] = field(default=None)
 
 
-__all__ = ["ProjectQuestionCreate", "CaseyQuestionResponse", "ProjectType"]
+@dataclass
+class CreativeProjectCreate:
+    """Schema used when creating a new creative project."""
 
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+    original_filename: Optional[str] = None
+    file_path: Optional[str] = None
+    file_size: Optional[int] = None
+    mime_type: Optional[str] = None
+
+
+@dataclass
+class CreativeProject:
+    """Simple representation of a creative project."""
+
+    id: int
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+
+
+@dataclass
+class ProjectUploadResponse:
+    """Response returned after successfully uploading a project."""
+
+    project_id: int
+    filename: str
+
+
+@dataclass
+class ProjectAnalysisResponse:
+    """Minimal analysis response for uploaded projects."""
+
+    result: dict
+
+
+__all__ = [
+    "ProjectQuestionCreate",
+    "ProjectQuestionUpdate",
+    "CaseyQuestionResponse",
+    "CreativeProjectCreate",
+    "CreativeProject",
+    "ProjectUploadResponse",
+    "ProjectAnalysisResponse",
+    "ProjectType",
+]

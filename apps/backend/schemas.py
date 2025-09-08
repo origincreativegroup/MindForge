@@ -1,20 +1,7 @@
 from datetime import datetime, date
-
-
-# Project type enumeration for reporting
-class ProjectType(str, Enum):
-    """Creative project types."""
-    
-    branding = "branding"
-    web_design = "web_design"
-    print_design = "print_design"
-    packaging = "packaging"
-    photography = "photography"
-    video = "video"
-    animation = "animation"
-    ui_ux = "ui_ux"
-    marketing = "marketing"
-    general = "general"
+from typing import Dict, List, Optional, Any
+from enum import Enum
+from pydantic import BaseModel
 
 # Conversation schemas
 class ConversationCreate(BaseModel):
@@ -85,6 +72,19 @@ class ProjectStatus(str, Enum):
     in_progress = "in_progress"
     shipped = "shipped"
     archived = "archived"
+
+
+class ProjectType(str, Enum):
+    branding = "branding"
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_design = "print_design"
+    illustration = "illustration"
+    photography = "photography"
+    video_production = "video_production"
+    ui_ux = "ui_ux"
+    packaging = "packaging"
+    logo_design = "logo_design"
 
 
 class AssetType(str, Enum):
@@ -309,5 +309,21 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
-ist[str]
 
+
+# Creative Project Analysis schemas
+class ProjectInsightCreate(BaseModel):
+    project_id: int
+    insight_type: str
+    title: str
+    description: str
+    score: float
+    data: Optional[Dict[str, Any]] = {}
+
+
+class ProjectInsightOut(ProjectInsightCreate):
+    id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
