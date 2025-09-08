@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Process Visualization</title>
+    <script>
+      (function () {
+        const supportedLocales = ['en', 'es'];
+        const path = window.location.pathname;
+        if (path === '/' || path === '') {
+          const browserLocales = navigator.languages
+            ? navigator.languages.map((l) => l.split('-')[0])
+            : [navigator.language.split('-')[0]];
+          const locale = browserLocales.find((l) => supportedLocales.includes(l));
+          if (locale && locale !== 'en') {
+            window.location.replace(`/${locale}`);
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
