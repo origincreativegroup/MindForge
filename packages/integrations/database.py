@@ -4,7 +4,14 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mindforge.db")
+# Prefer an explicit DATABASE_URL but fall back to Vercel's POSTGRES_URL if
+# provided.  When neither is set we use a local SQLite file for development.
+DEFAULT_SQLITE_URL = "sqlite:///./mindforge.db"
+DATABASE_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("POSTGRES_URL")
+    or DEFAULT_SQLITE_URL
+)
 
 
 def get_engine():

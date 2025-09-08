@@ -2,11 +2,20 @@ from typing import Tuple, List
 import csv, io
 from pypdf import PdfReader
 
-def parse_uploaded(filename: str, content: bytes) -> Tuple[str, str]:
+from packages.integrations.vercel_storage import upload_blob
+
+
+def parse_uploaded(filename: str, content: bytes) -> Tuple[str, str, str]:
+    """Parse uploaded file content and store the raw file in Vercel Blob."""
+
     name = (filename or '').lower()
+    kind = 'file'
+    summary = f'Uploaded file {filename} ({len(content)} bytes).'
+
     if name.endswith('.txt'):
-        return ('text', content.decode('utf-8', errors='ignore')[:10000])
-    if name.endswith('.csv'):
+        kind = 'text'
+        summary = content.decode('utf-8', errors='ignore')[:10000]
+    elif name.endswith('.csv'):
         try:
             sample = content.decode('utf-8', errors='ignore')
             rows = list(csv.reader(io.StringIO(sample)))
@@ -15,10 +24,12 @@ def parse_uploaded(filename: str, content: bytes) -> Tuple[str, str]:
             head_line = ', '.join(head)
             preview_lines = [' | '.join(r) for r in preview]
             text = "CSV headers: " + head_line + "\nPreview:\n" + "\n".join(preview_lines)
-            return ('csv', text[:10000])
+            summary = text[:10000]
+            kind = 'csv'
         except Exception:
-            return ('csv', 'Could not parse CSV (encoding/format issue).')
-    if name.endswith('.pdf'):
+            summary = 'Could not parse CSV (encoding/format issue).'
+            kind = 'csv'
+    elif name.endswith('.pdf'):
         try:
             reader = PdfReader(io.BytesIO(content))
             txt = []
@@ -27,8 +38,11 @@ def parse_uploaded(filename: str, content: bytes) -> Tuple[str, str]:
                     txt.append(page.extract_text() or '')
                 except Exception:
                     continue
-            return ('pdf', '\n'.join(txt)[:12000])
+            summary = '\n'.join(txt)[:12000]
+            kind = 'pdf'
         except Exception:
-            return ('pdf', 'Could not parse PDF.')
-    # fallback: treat as binary blob summary
-    return ('file', f'Uploaded file {filename} ({len(content)} bytes).')
+            summary = 'Could not parse PDF.'
+            kind = 'pdf'
+
+    blob_url = upload_blob(filename, content)
+    return (kind, summary, blob_url)
