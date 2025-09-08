@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './BusinessDashboard.css';
 
 const BusinessDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
