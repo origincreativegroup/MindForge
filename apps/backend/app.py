@@ -21,7 +21,7 @@ except ImportError:
 
 # Fix: Use absolute imports instead of relative imports
 try:
-    from routers import workforce
+    from .routers import workforce
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")
