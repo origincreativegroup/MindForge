@@ -99,8 +99,7 @@ async def upload(conversation_id: int, file: UploadFile = File(...), db: Session
     if not conv: raise HTTPException(404, "Conversation not found")
     content = await file.read()
     kind, summary = parse_uploaded(file.filename, content)
-    text = f"[Uploaded {kind} {file.filename}]
-{summary}"
+    text = f"[Uploaded {kind} {file.filename}]\n{summary}"
     emo = score_emotion(text)
     um = models.Message(conversation_id=conversation_id, role="user", content=text, emotion=emo)
     db.add(um); db.commit()
