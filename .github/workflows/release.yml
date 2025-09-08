@@ -1,0 +1,32 @@
+name: Release
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - uses: ./.github/actions/setup-python
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          poetry install
+      - name: Version and publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm release
+      - name: Build Docker images
+        run: |
+          echo "docker build backend:${{ steps.changesets.outputs.version }}"
+          echo "docker build frontend:${{ steps.changesets.outputs.version }}"
+      - name: Push Docker images
+        run: |
+          echo "docker push backend:${{ steps.changesets.outputs.version }}"
+          echo "docker push frontend:${{ steps.changesets.outputs.version }}"

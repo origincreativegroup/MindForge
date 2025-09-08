@@ -340,7 +340,7 @@ class CreativeProject(BaseModel):
     extracted_text: Optional[str] = None
     tags: Optional[List[str]] = None
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -374,7 +374,7 @@ class ProjectQuestion(BaseModel):
     answer: Optional[str] = None
     answered_at: Optional[datetime] = None
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -439,7 +439,7 @@ class ProjectFile(BaseModel):
     file_type: str
     file_size: int
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -460,7 +460,7 @@ class ProjectInsight(BaseModel):
     description: str
     confidence: float
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
