@@ -10,12 +10,15 @@
 <script>
 const messages = document.getElementById('messages');
 function addMsg(role, text) {
-  const div = document.createElement('div');
-  div.className = role;
-  div.textContent = text;
-  messages.appendChild(div);
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+  messages.appendChild(wrap);
   messages.scrollTop = messages.scrollHeight;
-  return div;
+  return bubble;
 }
 
 async function sendMsg(event) {
@@ -27,14 +30,12 @@ async function sendMsg(event) {
   input.value = '';
 
   const bubble = addMsg('assistant', '');
-  let acc = '';
   const src = new EventSource(`/api/conversations/1/message_stream?content=${encodeURIComponent(text)}`);
   src.onmessage = (e) => {
     if (e.data === '[DONE]') {
       src.close();
     } else {
-      acc += e.data;
-      bubble.textContent = acc;
+      bubble.textContent += e.data;
     }
   };
   src.onerror = (e) => {
