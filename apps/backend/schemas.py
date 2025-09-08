@@ -298,6 +298,7 @@ class SkillGap(BaseModel):
     gap: int
 
 
+# ---------------------------------------------------------------------------
 # Creative project schemas for the creative projects router
 # ---------------------------------------------------------------------------
 
@@ -468,12 +469,6 @@ class ProjectUploadResponse(BaseModel):
     project: CreativeProject
     questions: List[ProjectQuestion]
     next_steps: List[str]
-
-
-class CaseyQuestionResponse(BaseModel):
-    question: str
-    question_type: str
-    context: Optional[str] = None
 
 
 class ProjectAnalysisResponse(BaseModel):
