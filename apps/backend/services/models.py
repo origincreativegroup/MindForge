@@ -369,4 +369,4 @@ class ProjectInsight(Base):
     data = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    project = relationship("Project")
+
