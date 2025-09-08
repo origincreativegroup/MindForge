@@ -12,12 +12,13 @@ from sqlalchemy import (
     Date,
     Boolean,
     Enum,
+    Float,
     Table,
     Index,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -162,7 +163,7 @@ class Project(Base):
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
-    assets = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    assets = relationship("Asset", foreign_keys="Asset.project_id", back_populates="project", cascade="all, delete-orphan")
     roles = relationship("Role", back_populates="project", cascade="all, delete-orphan")
     deliverables = relationship("Deliverable", back_populates="project", cascade="all, delete-orphan")
     case_study = relationship("CaseStudy", back_populates="project", uselist=False)
@@ -264,7 +265,7 @@ class Asset(Base):
     nda_group = Column(String, nullable=True)
     expires_at = Column(DateTime, nullable=True)
 
-    project = relationship("Project", back_populates="assets")
+    project = relationship("Project", foreign_keys=[project_id], back_populates="assets")
     rights = relationship("RightsConsent", back_populates="assets")
     whitelist_entries = relationship(
         "AssetWhitelist", back_populates="asset", cascade="all, delete-orphan"
@@ -333,67 +334,3 @@ class LearningGoal(Base):
 
     skill = relationship("Skill", back_populates="goals")
 
-
-# Additional models for reporting service
-
-# Alias for existing Project model to match reporting service expectations
-CreativeProject = Project
-
-
-class ProjectQuestion(Base):
-    __tablename__ = "project_questions"
-
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    question = Column(Text, nullable=False)
-    answer = Column(Text, nullable=True)
-    question_type = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    project = relationship("Project")
-
-
-class ProjectInsight(Base):
-    __tablename__ = "project_insights"
-
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    insight_type = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    score = Column(String, nullable=True)  # Using String to handle float values
-    data = Column(JSON, default=dict)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    project = relationship("Project")
-
-
-class ProjectComment(Base):
-    __tablename__ = "project_comments"
-
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    author_id = Column(Integer, nullable=True)  # Could be linked to a user table later
-    author_name = Column(String, nullable=False)
-    content = Column(Text, nullable=False)
-    comment_type = Column(String, default="general")
-    is_resolved = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    project = relationship("Project")
-
-
-class ProjectActivity(Base):
-    __tablename__ = "project_activities"
-
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    activity_type = Column(String, nullable=False)
-    description = Column(Text, nullable=False)
-    actor_name = Column(String, nullable=True)
-    activity_metadata = Column(JSON, default=dict)  # Renamed to avoid conflict with SQLAlchemy metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    project = relationship("Project")

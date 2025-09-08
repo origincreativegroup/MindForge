@@ -1,7 +1,5 @@
 from datetime import datetime, date
-from typing import Dict, List, Optional
-from enum import Enum
-from pydantic import BaseModel
+
 
 # Project type enumeration for reporting
 class ProjectType(str, Enum):
@@ -311,3 +309,5 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
+ist[str]
+
