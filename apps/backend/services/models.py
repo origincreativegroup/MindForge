@@ -145,12 +145,20 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=True)  # Alias for title for reporting compatibility
     short_tagline = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.pitch, nullable=False)
+    project_type = Column(String, default="general", nullable=False)  # For reporting service
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     disciplines = Column(JSON, default=list)
+    dimensions = Column(JSON, default=dict)  # For reporting service
+    color_palette = Column(JSON, default=list)  # For reporting service
+    tags = Column(JSON, default=list)  # For reporting service
     hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
 
     client = relationship("Client", back_populates="projects")

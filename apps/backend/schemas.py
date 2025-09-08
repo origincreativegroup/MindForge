@@ -1,6 +1,21 @@
 from datetime import datetime, date
 
 
+# Project type enumeration for reporting
+class ProjectType(str, Enum):
+    """Creative project types."""
+    
+    branding = "branding"
+    web_design = "web_design"
+    print_design = "print_design"
+    packaging = "packaging"
+    photography = "photography"
+    video = "video"
+    animation = "animation"
+    ui_ux = "ui_ux"
+    marketing = "marketing"
+    general = "general"
+
 # Conversation schemas
 class ConversationCreate(BaseModel):
     title: Optional[str] = None
