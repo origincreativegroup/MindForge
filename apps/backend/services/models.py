@@ -324,3 +324,126 @@ class LearningGoal(Base):
     due_date = Column(Date, nullable=True)
 
     skill = relationship("Skill", back_populates="goals")
+
+
+# ---------------------------------------------------------------------------
+# Creative project models for the creative projects router
+# ---------------------------------------------------------------------------
+
+class ProjectType(PyEnum):
+    """Project types for creative projects."""
+
+    website_mockup = "website_mockup"
+    social_media = "social_media"
+    print_graphic = "print_graphic"
+    logo_design = "logo_design"
+    ui_design = "ui_design"
+    video = "video"
+    branding = "branding"
+
+
+class QuestionType(PyEnum):
+    """Types of questions that can be asked."""
+
+    choice = "choice"
+    text = "text"
+    boolean = "boolean"
+
+class CreativeProject(Base):
+    __tablename__ = "creative_projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # Keep both name (from master) and title (from my implementation) for flexibility
+    name = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=True, index=True)  # Alternative field for questioner
+    short_tagline = Column(String, nullable=True)
+    project_type = Column(Enum(ProjectType), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(Enum(ProjectStatus), default=ProjectStatus.pitch, nullable=False)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
+    disciplines = Column(JSON, default=list)
+    hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
+    # File-related fields from master
+    original_filename = Column(String, nullable=True)  # Made nullable for compatibility
+    file_path = Column(String, nullable=True)  # Made nullable for compatibility
+    file_size = Column(Integer, nullable=True)  # Made nullable for compatibility
+    mime_type = Column(String, nullable=True)
+    # Content analysis fields
+    extracted_text = Column(Text, nullable=True)
+    dimensions = Column(JSON, nullable=True)  # Changed from String to JSON for flexibility
+    color_palette = Column(JSON, nullable=True)
+    tags = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    client = relationship("Client", foreign_keys=[client_id])
+    hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
+    questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
+    files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
+    insights = relationship("ProjectInsight", back_populates="project", cascade="all, delete-orphan")
+    comments = relationship("ProjectComment", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectQuestion(Base):
+    __tablename__ = "project_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    question = Column(Text, nullable=False)
+    question_type = Column(Enum(QuestionType), nullable=False)  # Enhanced to use enum
+    options = Column(JSON, nullable=True)  # New field for questioner functionality
+    priority = Column(Integer, default=2)  # New field for questioner functionality
+    is_answered = Column(Boolean, default=False, nullable=False)
+    answer = Column(Text, nullable=True)
+    answered_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="questions")
+
+
+class ProjectFile(Base):
+    __tablename__ = "project_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    filename = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    file_type = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="files")
+
+
+class ProjectInsight(Base):
+    __tablename__ = "project_insights"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    insight_type = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    confidence = Column(Integer, nullable=False)  # 0-100
+    score = Column(Integer, nullable=True)  # Additional score field for compatibility
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="insights")
+
+
+class ProjectComment(Base):
+    __tablename__ = "project_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    comment_type = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    is_resolved = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    project = relationship("CreativeProject", back_populates="comments")
