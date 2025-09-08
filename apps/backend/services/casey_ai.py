@@ -1,6 +1,4 @@
 """
-Advanced AI Engine for Casey - AI Business Partner with sophisticated process intelligence and business optimization
-"""
 import re
 import json
 import time
@@ -13,7 +11,6 @@ from dataclasses import dataclass, field
 @dataclass
 class ProcessInsight:
     """Represents an AI-generated insight about a process"""
-    type: str  # optimization, risk, compliance, performance, business
     confidence: float
     title: str
     description: str
@@ -22,41 +19,12 @@ class ProcessInsight:
     metrics: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
-class BusinessOpportunity:
-    """Represents a business opportunity found by AI"""
-    type: str  # freelance, contract, partnership, niche
-    title: str
-    description: str
-    platform: str
-    budget_range: str
-    skills_match: float
-    urgency: str  # low, medium, high
-    proposal_suggestions: List[str]
-    client_profile: Dict[str, Any] = field(default_factory=dict)
-
-@dataclass
-class PortfolioInsight:
-    """Represents insights about creative portfolio"""
-    project_type: str
-    performance_score: float
-    conversion_rate: float
-    value_optimization: List[str]
-    positioning_suggestions: List[str]
-    rate_recommendation: Dict[str, Any] = field(default_factory=dict)
-
-@dataclass
-class ConversationContext:
-    """Advanced context tracking for conversations"""
-    user_expertise: str = "beginner"  # beginner, intermediate, expert
-    domain: str = "general"  # finance, hr, engineering, sales, creative, etc.
     emotional_state: str = "neutral"
     conversation_pattern: str = "exploratory"
     goals: List[str] = field(default_factory=list)
     pain_points: List[str] = field(default_factory=list)
     preferences: Dict[str, Any] = field(default_factory=dict)
-    business_context: Dict[str, Any] = field(default_factory=dict)  # freelancer, agency, employee, etc.
-    portfolio_type: str = "unknown"  # designer, developer, marketer, writer, etc.
-    business_stage: str = "unknown"  # starting, growing, scaling, established
+
 
 class AdvancedCaseyAI:
     """
@@ -75,13 +43,6 @@ class AdvancedCaseyAI:
         self.optimization_engine = ProcessOptimizationEngine()
         self.risk_analyzer = RiskAnalysisEngine()
         self.conversation_ai = ConversationAI()
-        
-        # Business Partner AI Models
-        self.lead_generator = LeadGenerationEngine()
-        self.portfolio_analyzer = PortfolioAnalysisEngine()
-        self.rate_optimizer = RateOptimizationEngine()
-        self.brand_builder = BrandBuildingEngine()
-        self.business_intelligence = BusinessIntelligenceEngine()
 
     def _initialize_knowledge_base(self):
         """Initialize comprehensive process knowledge base"""
@@ -127,11 +88,7 @@ class AdvancedCaseyAI:
                     "common_processes": ["development", "testing", "deployment", "incident response"],
                     "standards": ["CI/CD", "code review", "documentation"],
                     "key_metrics": ["deployment frequency", "lead time", "error rate"]
-                },
-                "creative": {
-                    "common_processes": ["project briefing", "concept development", "design iteration", "client approval"],
-                    "specializations": ["ui/ux design", "brand design", "web development", "content creation"],
-                    "key_metrics": ["project turnaround", "revision cycles", "client satisfaction", "portfolio conversion"]
+
                 }
             },
             "cognitive_biases": [
@@ -141,37 +98,7 @@ class AdvancedCaseyAI:
             "optimization_patterns": [
                 "parallel processing", "automation", "elimination", "standardization",
                 "batching", "delegation", "exception handling", "continuous improvement"
-            ],
-            "business_intelligence": {
-                "freelance_platforms": {
-                    "upwork": {"avg_rate": "$15-75/hr", "competition": "high", "volume": "very high"},
-                    "fiverr": {"avg_rate": "$5-100/project", "competition": "very high", "volume": "high"},
-                    "99designs": {"avg_rate": "$200-2000/project", "competition": "high", "volume": "medium"},
-                    "dribbble": {"avg_rate": "$50-150/hr", "competition": "medium", "volume": "low"},
-                    "behance": {"avg_rate": "$40-120/hr", "competition": "medium", "volume": "low"}
-                },
-                "creative_niches": {
-                    "fintech_ui": {"avg_rate": "$75-150/hr", "demand": "high", "specialization_premium": "40%"},
-                    "saas_design": {"avg_rate": "$60-120/hr", "demand": "very high", "specialization_premium": "35%"},
-                    "ecommerce_brands": {"avg_rate": "$50-100/hr", "demand": "high", "specialization_premium": "25%"},
-                    "healthcare_tech": {"avg_rate": "$70-140/hr", "demand": "medium", "specialization_premium": "45%"},
-                    "crypto_brands": {"avg_rate": "$80-160/hr", "demand": "medium", "specialization_premium": "50%"}
-                },
-                "business_models": {
-                    "hourly_freelance": {"pros": ["predictable income", "simple pricing"], "cons": ["time-limited growth", "no passive income"]},
-                    "project_packages": {"pros": ["value-based pricing", "clearer scope"], "cons": ["scope creep risk", "payment delays"]},
-                    "retainer_clients": {"pros": ["predictable income", "long-term relationships"], "cons": ["availability constraints", "client dependency"]},
-                    "digital_products": {"pros": ["scalable income", "passive revenue"], "cons": ["upfront investment", "market saturation"]},
-                    "agency_model": {"pros": ["unlimited growth", "team leverage"], "cons": ["management overhead", "cash flow complexity"]}
-                },
-                "market_trends": {
-                    "remote_work": {"impact": "high", "opportunity": "global client access"},
-                    "ai_integration": {"impact": "high", "opportunity": "ai-assisted workflows"},
-                    "sustainability": {"impact": "medium", "opportunity": "eco-conscious brands"},
-                    "personalization": {"impact": "high", "opportunity": "custom experiences"},
-                    "mobile_first": {"impact": "very high", "opportunity": "mobile-optimized designs"}
-                }
-            }
+
         }
 
     def analyze_conversation_turn(self, user_input: str, conversation_id: str = "default") -> Dict[str, Any]:
@@ -203,10 +130,7 @@ class AdvancedCaseyAI:
             "analysis": analysis,
             "insights": insights,
             "context": context,
-            "recommended_response": self._generate_smart_response(analysis, context, insights),
-            "business_opportunities": self._identify_business_opportunities(analysis, context),
-            "portfolio_insights": self._analyze_portfolio_potential(analysis, context),
-            "rate_recommendations": self._generate_rate_recommendations(analysis, context)
+
         }
 
     def _analyze_intent(self, text: str) -> Dict[str, float]:
@@ -600,8 +524,7 @@ class AdvancedCaseyAI:
             return self._generate_optimization_response(analysis, insights)
         elif primary_intent == "solve_problem":
             return self._generate_problem_solving_response(analysis, insights)
-        elif self._is_business_context(analysis, context):
-            return self._generate_business_partner_response(analysis, context, insights)
+
         else:
             return self._generate_discovery_response(analysis, context)
 
@@ -663,56 +586,6 @@ class AdvancedCaseyAI:
 
         return "Let's get to the root of this problem. Can you describe what should happen versus what actually happens? I'll help identify where the process breaks down."
 
-    def _is_business_context(self, analysis: Dict, context: ConversationContext) -> bool:
-        """Check if conversation is in business optimization context"""
-        business_keywords = [
-            "freelance", "client", "rate", "pricing", "portfolio", "business", 
-            "income", "revenue", "project", "design", "creative", "agency"
-        ]
-        
-        entities = analysis.get("entities", {})
-        all_text = " ".join([
-            str(entities), " ".join(context.goals), " ".join(context.pain_points)
-        ]).lower()
-        
-        return any(keyword in all_text for keyword in business_keywords)
-    
-    def _generate_business_partner_response(self, analysis: Dict, context: ConversationContext, insights: List[ProcessInsight]) -> str:
-        """Generate business partner focused response"""
-        
-        # Check for specific business needs
-        if "rate" in " ".join(str(analysis.get("entities", {}))).lower():
-            return self._generate_pricing_guidance_response(analysis, context)
-        elif "client" in " ".join(str(analysis.get("entities", {}))).lower():
-            return self._generate_client_acquisition_response(analysis, context)
-        elif "portfolio" in " ".join(str(analysis.get("entities", {}))).lower():
-            return self._generate_portfolio_optimization_response(analysis, context)
-        else:
-            return self._generate_general_business_response(analysis, context)
-    
-    def _generate_pricing_guidance_response(self, analysis: Dict, context: ConversationContext) -> str:
-        """Generate pricing strategy response"""
-        expertise = context.user_expertise
-        
-        if expertise == "beginner":
-            return "I can help you price your services strategically! Most beginners undercharge by 30-50%. Based on your skills, you're likely worth more than you think. What type of work do you do, and what are you currently charging? I'll show you market benchmarks and help you increase your rates confidently."
-        elif expertise == "intermediate":
-            return "Great question about pricing! You're at the perfect stage to implement value-based pricing instead of hourly rates. This typically increases revenue by 25-40%. What's your biggest challenge with pricing - is it knowing what to charge, or having confidence in your rates?"
-        else:
-            return "Excellent - let's optimize your pricing strategy! Expert-level creatives often leave money on the table by not positioning properly. I can help you identify premium niches, create high-value packages, and potentially increase rates 20-50%. What's your current business model - hourly, project-based, or retainers?"
-    
-    def _generate_client_acquisition_response(self, analysis: Dict, context: ConversationContext) -> str:
-        """Generate client acquisition strategy response"""
-        return "I can be your AI business development partner! Instead of you spending hours searching for clients, I can help you build a system that attracts high-quality leads automatically. This includes optimizing your portfolio for conversions, identifying the best platforms for your niche, and creating proposal templates that win. What's your biggest challenge right now - finding leads, converting prospects, or attracting better clients?"
-    
-    def _generate_portfolio_optimization_response(self, analysis: Dict, context: ConversationContext) -> str:
-        """Generate portfolio optimization response"""
-        return "Your portfolio is your most powerful business tool - let's make it work harder for you! I can analyze which projects convert best to clients, suggest case studies that showcase business impact, and help position you as a specialist rather than generalist. This typically increases inquiry quality by 60-80%. What type of creative work do you do, and are you getting the quality of leads you want from your current portfolio?"
-    
-    def _generate_general_business_response(self, analysis: Dict, context: ConversationContext) -> str:
-        """Generate general business partnership response"""
-        return "I'm here as your AI business partner to help grow your creative business! I can help with finding high-quality opportunities, optimizing your rates, building your professional brand, and creating systems that work while you focus on what you do best. What's your biggest business challenge right now - inconsistent income, low rates, finding good clients, or something else?"
-
     def _generate_discovery_response(self, analysis: Dict, context: ConversationContext) -> str:
         """Generate discovery-focused response"""
         entities = analysis.get("entities", {})
@@ -738,193 +611,6 @@ class AdvancedCaseyAI:
 
         return random.choice(discovery_questions)
 
-    def _identify_business_opportunities(self, analysis: Dict, context: ConversationContext) -> List[BusinessOpportunity]:
-        """Identify business opportunities based on conversation analysis"""
-        opportunities = []
-        
-        # Check if user is in creative field
-        if self._is_creative_professional(analysis, context):
-            opportunities.extend(self._find_creative_opportunities(analysis, context))
-        
-        # Check for specialization opportunities
-        if context.portfolio_type != "unknown":
-            opportunities.extend(self._find_niche_opportunities(context))
-            
-        # Check for business model optimization
-        if self._detect_business_pain_points(analysis):
-            opportunities.extend(self._suggest_business_model_improvements(analysis, context))
-            
-        return opportunities
-    
-    def _is_creative_professional(self, analysis: Dict, context: ConversationContext) -> bool:
-        """Detect if user is a creative professional"""
-        creative_indicators = [
-            "design", "portfolio", "client", "project", "creative", "brand", 
-            "website", "logo", "ui", "ux", "graphic", "web", "freelance"
-        ]
-        
-        entities = analysis.get("entities", {})
-        all_text = " ".join([
-            str(entities), context.domain, " ".join(context.goals), " ".join(context.pain_points)
-        ]).lower()
-        
-        creative_score = sum(1 for indicator in creative_indicators if indicator in all_text)
-        return creative_score >= 2 or context.domain == "creative"
-    
-    def _find_creative_opportunities(self, analysis: Dict, context: ConversationContext) -> List[BusinessOpportunity]:
-        """Find opportunities for creative professionals"""
-        opportunities = []
-        
-        # High-value niche opportunities
-        if context.user_expertise in ["intermediate", "expert"]:
-            opportunities.append(BusinessOpportunity(
-                type="niche",
-                title="Fintech UI Specialization",
-                description="High-demand niche with 40% premium rates. Fintech companies need specialized UI/UX designers who understand financial workflows.",
-                platform="multiple",
-                budget_range="$75-150/hour",
-                skills_match=0.8,
-                urgency="medium",
-                proposal_suggestions=[
-                    "Highlight any finance-related projects",
-                    "Emphasize user experience in complex workflows",
-                    "Showcase understanding of security and compliance"
-                ],
-                client_profile={"industry": "fintech", "size": "startup to enterprise", "budget": "high"}
-            ))
-            
-        # Platform-specific opportunities
-        opportunities.append(BusinessOpportunity(
-            type="freelance",
-            title="Premium Design Package Opportunity",
-            description="Move from hourly to value-based pricing with design packages. Increase revenue by 30-50%.",
-            platform="direct_clients",
-            budget_range="$2000-8000/package",
-            skills_match=0.9,
-            urgency="high",
-            proposal_suggestions=[
-                "Create 3-tier package structure (Good, Better, Best)",
-                "Focus on business outcomes, not deliverables",
-                "Include strategy consultation in packages"
-            ]
-        ))
-        
-        return opportunities
-    
-    def _find_niche_opportunities(self, context: ConversationContext) -> List[BusinessOpportunity]:
-        """Find niche specialization opportunities"""
-        niches = self.knowledge_base["business_intelligence"]["creative_niches"]
-        opportunities = []
-        
-        for niche, data in niches.items():
-            if data["demand"] in ["high", "very high"]:
-                opportunities.append(BusinessOpportunity(
-                    type="niche",
-                    title=f"{niche.replace('_', ' ').title()} Specialization",
-                    description=f"Specialize in {niche.replace('_', ' ')} for {data['specialization_premium']} rate premium",
-                    platform="multiple",
-                    budget_range=data["avg_rate"],
-                    skills_match=0.7,
-                    urgency="medium",
-                    proposal_suggestions=[
-                        f"Build portfolio focused on {niche.replace('_', ' ')}",
-                        "Study industry-specific requirements",
-                        "Network within the industry"
-                    ]
-                ))
-                
-        return opportunities[:2]  # Limit to top 2 opportunities
-    
-    def _detect_business_pain_points(self, analysis: Dict) -> bool:
-        """Detect business-related pain points"""
-        business_pain_indicators = [
-            "low rates", "cheap clients", "not making enough", "inconsistent income",
-            "too much competition", "can't find good clients", "undercharging"
-        ]
-        
-        pain_points = analysis.get("pain_points", [])
-        all_text = " ".join(str(pain_points)).lower()
-        
-        return any(indicator in all_text for indicator in business_pain_indicators)
-    
-    def _suggest_business_model_improvements(self, analysis: Dict, context: ConversationContext) -> List[BusinessOpportunity]:
-        """Suggest business model improvements"""
-        opportunities = []
-        
-        # Retainer opportunity
-        opportunities.append(BusinessOpportunity(
-            type="business_model",
-            title="Retainer Client Strategy",
-            description="Transition 30% of clients to monthly retainers for predictable income and stronger relationships.",
-            platform="existing_clients",
-            budget_range="$2000-8000/month",
-            skills_match=0.85,
-            urgency="high",
-            proposal_suggestions=[
-                "Identify your best 3-5 clients",
-                "Propose ongoing design/maintenance packages",
-                "Start with 3-month trial retainers"
-            ]
-        ))
-        
-        return opportunities
-    
-    def _analyze_portfolio_potential(self, analysis: Dict, context: ConversationContext) -> List[PortfolioInsight]:
-        """Analyze portfolio optimization potential"""
-        insights = []
-        
-        if self._is_creative_professional(analysis, context):
-            insights.append(PortfolioInsight(
-                project_type="ui_design",
-                performance_score=0.7,
-                conversion_rate=0.15,
-                value_optimization=[
-                    "Focus on 3-4 strongest projects",
-                    "Add case studies with business impact",
-                    "Show before/after results"
-                ],
-                positioning_suggestions=[
-                    "Position as specialist rather than generalist",
-                    "Highlight specific industry experience",
-                    "Emphasize problem-solving approach"
-                ],
-                rate_recommendation={
-                    "current_estimate": "$40-60/hour",
-                    "optimized_rate": "$60-90/hour",
-                    "justification": "Specialized positioning and case study improvements"
-                }
-            ))
-            
-        return insights
-    
-    def _generate_rate_recommendations(self, analysis: Dict, context: ConversationContext) -> Dict[str, Any]:
-        """Generate rate optimization recommendations"""
-        if not self._is_creative_professional(analysis, context):
-            return {}
-            
-        base_rate = 50  # Default starting point
-        
-        # Adjust based on expertise
-        if context.user_expertise == "expert":
-            base_rate *= 1.5
-        elif context.user_expertise == "intermediate":
-            base_rate *= 1.2
-            
-        # Adjust based on domain
-        if context.domain in ["fintech", "healthcare", "enterprise"]:
-            base_rate *= 1.3
-            
-        return {
-            "current_market_rate": f"${base_rate-10}-{base_rate+10}/hour",
-            "optimized_rate": f"${int(base_rate*1.3)}-{int(base_rate*1.6)}/hour",
-            "increase_strategy": [
-                "Implement value-based pricing for new clients",
-                "Gradual rate increases with existing clients",
-                "Package services instead of hourly billing"
-            ],
-            "market_positioning": "Position as specialist with deep expertise",
-            "confidence": 0.8
-        }
 
     def _update_context(self, user_input: str, context: ConversationContext):
         """Update conversation context based on new input"""
@@ -950,49 +636,6 @@ class AdvancedCaseyAI:
         for pain_point in pain_points:
             if pain_point not in context.pain_points:
                 context.pain_points.append(pain_point)
-        
-        # Update business context
-        self._update_business_context(user_input, context)
-    
-    def _update_business_context(self, user_input: str, context: ConversationContext):
-        """Update business-specific context"""
-        text_lower = user_input.lower()
-        
-        # Detect portfolio type
-        portfolio_indicators = {
-            "ui_designer": ["ui", "user interface", "app design", "mobile design"],
-            "ux_designer": ["ux", "user experience", "research", "wireframes"],
-            "brand_designer": ["logo", "brand", "identity", "branding"],
-            "web_developer": ["website", "web development", "frontend", "backend"],
-            "graphic_designer": ["graphic", "print", "poster", "brochure"],
-            "marketer": ["marketing", "social media", "content", "campaigns"]
-        }
-        
-        for portfolio_type, indicators in portfolio_indicators.items():
-            if any(indicator in text_lower for indicator in indicators):
-                context.portfolio_type = portfolio_type
-                break
-        
-        # Detect business stage
-        stage_indicators = {
-            "starting": ["just started", "new to", "beginning", "first client"],
-            "growing": ["growing", "scaling", "more clients", "busier"],
-            "scaling": ["team", "hiring", "agency", "multiple projects"],
-            "established": ["years of experience", "established", "senior", "expert"]
-        }
-        
-        for stage, indicators in stage_indicators.items():
-            if any(indicator in text_lower for indicator in indicators):
-                context.business_stage = stage
-                break
-        
-        # Update business context based on conversation
-        if any(word in text_lower for word in ["freelance", "client", "project"]):
-            context.business_context["type"] = "freelancer"
-        elif any(word in text_lower for word in ["agency", "team", "employees"]):
-            context.business_context["type"] = "agency"
-        elif any(word in text_lower for word in ["job", "company", "employer"]):
-            context.business_context["type"] = "employee"
 
     def _update_learning(self, user_input: str, analysis: Dict, conversation_id: str):
         """Update learning data for continuous improvement"""
@@ -1156,30 +799,7 @@ class ConversationAI:
                 "What manual steps could be automated?",
                 "How do you handle peak volumes?",
                 "What metrics do you track?"
-            ],
-            "business_development": [
-                "What type of creative work do you do?",
-                "What are your current rates and income goals?",
-                "How do you currently find clients?",
-                "What's your biggest business challenge?",
-                "Are you positioning as specialist or generalist?",
-                "What would doubling your income look like?"
-            ],
-            "portfolio_optimization": [
-                "What projects get the best client response?",
-                "How do prospects currently find your work?",
-                "What type of clients do you want to attract?",
-                "Are you getting inquiries from your portfolio?",
-                "What makes your work different from competitors?",
-                "How do you showcase business impact?"
-            ],
-            "rate_optimization": [
-                "What do you currently charge?",
-                "How do you determine your rates?",
-                "What do competitors charge in your area?",
-                "Are clients pushing back on pricing?",
-                "Do you charge hourly or by project?",
-                "What would justify charging 50% more?"
+
             ]
         }
 
@@ -1193,302 +813,3 @@ class ConversationAI:
             # Generate synthesis question
             return "Based on everything you've shared, what would you say is the most important improvement to tackle first?"
 
-
-class LeadGenerationEngine:
-    """AI-powered lead generation and opportunity matching"""
-    
-    def __init__(self):
-        self.platforms = {
-            "upwork": {"weight": 0.3, "avg_quality": 0.6},
-            "linkedin": {"weight": 0.4, "avg_quality": 0.8},
-            "dribbble": {"weight": 0.2, "avg_quality": 0.7},
-            "behance": {"weight": 0.1, "avg_quality": 0.5}
-        }
-    
-    def find_opportunities(self, skills: List[str], preferences: Dict[str, Any]) -> List[BusinessOpportunity]:
-        """Find matching opportunities across platforms"""
-        opportunities = []
-        
-        # Simulate finding high-quality opportunities
-        if "design" in " ".join(skills).lower():
-            opportunities.append(BusinessOpportunity(
-                type="freelance",
-                title="SaaS Dashboard Design",
-                description="Looking for UI/UX designer for B2B SaaS dashboard redesign. 8-week project.",
-                platform="linkedin",
-                budget_range="$8000-12000",
-                skills_match=0.92,
-                urgency="high",
-                proposal_suggestions=[
-                    "Highlight B2B SaaS experience",
-                    "Show data visualization examples",
-                    "Emphasize user research approach"
-                ],
-                client_profile={"industry": "saas", "size": "50-200 employees", "budget": "high"}
-            ))
-            
-        return opportunities
-    
-    def generate_proposal(self, opportunity: BusinessOpportunity, user_profile: Dict) -> str:
-        """Generate customized proposal"""
-        return f"""Hi there,
-
-I saw your posting for {opportunity.title} and I'm excited about the opportunity. With my specialized experience in {user_profile.get('specialization', 'design')}, I can help you achieve the results you're looking for.
-
-Here's how I'd approach this project:
-{chr(10).join(['• ' + step for step in opportunity.proposal_suggestions])}
-
-I'd love to discuss how we can make this project a success. When would be a good time for a brief call?
-
-Best regards,
-[Your name]"""
-
-
-class PortfolioAnalysisEngine:
-    """Analyze and optimize creative portfolios"""
-    
-    def analyze_project_performance(self, projects: List[Dict]) -> List[PortfolioInsight]:
-        """Analyze which projects perform best"""
-        insights = []
-        
-        for project in projects:
-            project_type = project.get("type", "unknown")
-            insights.append(PortfolioInsight(
-                project_type=project_type,
-                performance_score=random.uniform(0.6, 0.95),
-                conversion_rate=random.uniform(0.1, 0.3),
-                value_optimization=[
-                    "Add detailed case study",
-                    "Show measurable business impact",
-                    "Include client testimonial"
-                ],
-                positioning_suggestions=[
-                    f"Position as {project_type} specialist",
-                    "Emphasize unique approach",
-                    "Highlight technical expertise"
-                ]
-            ))
-            
-        return insights
-    
-    def optimize_presentation(self, portfolio_data: Dict) -> Dict[str, Any]:
-        """Suggest portfolio presentation improvements"""
-        return {
-            "structure_improvements": [
-                "Lead with your strongest project",
-                "Group by specialization, not chronology",
-                "Include 'About' section with clear positioning"
-            ],
-            "content_improvements": [
-                "Add process breakdown for each project",
-                "Include client results and testimonials",
-                "Show problem-solving approach"
-            ],
-            "technical_improvements": [
-                "Optimize for mobile viewing",
-                "Improve page load speed",
-                "Add contact CTAs on each page"
-            ]
-        }
-
-
-class RateOptimizationEngine:
-    """Market research and pricing optimization"""
-    
-    def analyze_market_rates(self, skills: List[str], location: str, experience: str) -> Dict[str, Any]:
-        """Analyze current market rates"""
-        base_rates = {
-            "beginner": {"min": 25, "max": 45},
-            "intermediate": {"min": 45, "max": 75},
-            "expert": {"min": 75, "max": 150}
-        }
-        
-        rates = base_rates.get(experience, base_rates["intermediate"])
-        
-        return {
-            "market_range": f"${rates['min']}-{rates['max']}/hour",
-            "recommended_rate": f"${rates['min'] + 10}-{rates['max'] - 10}/hour",
-            "premium_opportunities": [
-                "Specialize in high-value niches",
-                "Package services instead of hourly",
-                "Target enterprise clients"
-            ],
-            "rate_increase_strategy": [
-                "Increase rates 15-25% with new clients",
-                "Implement value-based pricing",
-                "Offer premium service tiers"
-            ]
-        }
-    
-    def suggest_pricing_models(self, business_type: str) -> List[Dict[str, Any]]:
-        """Suggest alternative pricing models"""
-        models = [
-            {
-                "name": "Value-Based Packages",
-                "description": "Fixed-price packages based on business value",
-                "benefits": ["Higher profits", "Clearer scope", "Better positioning"],
-                "example": "Website redesign package: $5000-15000"
-            },
-            {
-                "name": "Retainer Model",
-                "description": "Monthly recurring revenue for ongoing work",
-                "benefits": ["Predictable income", "Stronger relationships", "Less sales effort"],
-                "example": "Design retainer: $3000-8000/month"
-            },
-            {
-                "name": "Outcome-Based Pricing",
-                "description": "Pricing tied to specific business results",
-                "benefits": ["Premium rates", "Client alignment", "Long-term value"],
-                "example": "Conversion rate improvement: 10% of additional revenue"
-            }
-        ]
-        return models
-
-
-class BrandBuildingEngine:
-    """Professional brand development and positioning"""
-    
-    def analyze_positioning(self, current_brand: Dict) -> Dict[str, Any]:
-        """Analyze current brand positioning"""
-        return {
-            "positioning_score": random.uniform(0.4, 0.8),
-            "clarity_score": random.uniform(0.3, 0.9),
-            "differentiation_score": random.uniform(0.2, 0.7),
-            "improvements": [
-                "Develop clear specialization statement",
-                "Create consistent visual identity",
-                "Build thought leadership content"
-            ]
-        }
-    
-    def generate_content_strategy(self, niche: str, expertise: str) -> Dict[str, Any]:
-        """Generate content strategy for brand building"""
-        return {
-            "content_pillars": [
-                f"{niche} best practices",
-                "Design process insights",
-                "Industry trends and analysis",
-                "Case study breakdowns"
-            ],
-            "content_types": [
-                "LinkedIn articles (2x/week)",
-                "Portfolio case studies (1x/month)",
-                "Twitter threads (3x/week)",
-                "Design process videos (1x/month)"
-            ],
-            "engagement_strategy": [
-                "Comment on industry leaders' posts",
-                "Share work-in-progress updates",
-                "Respond to design questions in communities",
-                "Collaborate with other designers"
-            ]
-        }
-    
-    def suggest_specialization(self, skills: List[str], interests: List[str]) -> List[Dict[str, Any]]:
-        """Suggest profitable specialization areas"""
-        specializations = [
-            {
-                "name": "SaaS UI/UX Design",
-                "demand": "Very High",
-                "avg_rate": "$60-120/hour",
-                "requirements": ["B2B experience", "User research skills", "Analytics knowledge"],
-                "why_profitable": "High-growth market with enterprise budgets"
-            },
-            {
-                "name": "E-commerce Brand Design",
-                "demand": "High", 
-                "avg_rate": "$50-100/hour",
-                "requirements": ["Conversion optimization", "Brand strategy", "Psychology knowledge"],
-                "why_profitable": "Direct impact on client revenue"
-            },
-            {
-                "name": "Fintech Product Design",
-                "demand": "High",
-                "avg_rate": "$75-150/hour", 
-                "requirements": ["Financial services knowledge", "Compliance understanding", "Security focus"],
-                "why_profitable": "Specialized knowledge commands premium"
-            }
-        ]
-        return specializations
-
-
-class BusinessIntelligenceEngine:
-    """Track and analyze business performance"""
-    
-    def __init__(self):
-        self.metrics = {
-            "revenue": [],
-            "clients": [],
-            "projects": [],
-            "rates": []
-        }
-    
-    def track_performance(self, metric_type: str, value: float, timestamp: float = None):
-        """Track business performance metrics"""
-        if timestamp is None:
-            timestamp = time.time()
-            
-        if metric_type in self.metrics:
-            self.metrics[metric_type].append({
-                "value": value,
-                "timestamp": timestamp
-            })
-    
-    def generate_insights(self) -> Dict[str, Any]:
-        """Generate business intelligence insights"""
-        return {
-            "revenue_trends": self._analyze_revenue_trends(),
-            "client_analysis": self._analyze_client_patterns(),
-            "pricing_performance": self._analyze_pricing_trends(),
-            "growth_opportunities": self._identify_growth_opportunities(),
-            "risk_factors": self._assess_business_risks()
-        }
-    
-    def _analyze_revenue_trends(self) -> Dict[str, Any]:
-        """Analyze revenue patterns"""
-        return {
-            "monthly_growth": "12%",
-            "seasonal_patterns": "Q4 typically strongest",
-            "revenue_sources": {
-                "new_clients": "60%",
-                "repeat_clients": "40%"
-            }
-        }
-    
-    def _analyze_client_patterns(self) -> Dict[str, Any]:
-        """Analyze client behavior patterns"""
-        return {
-            "client_lifetime_value": "$8,500",
-            "avg_project_value": "$2,800",
-            "repeat_rate": "35%",
-            "referral_rate": "25%"
-        }
-    
-    def _analyze_pricing_trends(self) -> Dict[str, Any]:
-        """Analyze pricing performance"""
-        return {
-            "rate_progression": "+18% over 12 months",
-            "win_rate_by_price": {
-                "under_market": "85%",
-                "at_market": "60%", 
-                "above_market": "35%"
-            }
-        }
-    
-    def _identify_growth_opportunities(self) -> List[str]:
-        """Identify business growth opportunities"""
-        return [
-            "Increase rates by 20% for new clients",
-            "Develop 3-month retainer packages",
-            "Create digital templates for passive income",
-            "Partner with complementary service providers"
-        ]
-    
-    def _assess_business_risks(self) -> List[str]:
-        """Assess business risk factors"""
-        return [
-            "Over-dependence on single client (40% of revenue)",
-            "No backup for client acquisition beyond referrals",
-            "Pricing below market average",
-            "Limited passive income streams"
-        ]

@@ -1,7 +1,5 @@
 from datetime import datetime, date
-from typing import Dict, List, Optional
-from enum import Enum
-from pydantic import BaseModel
+
 
 # Conversation schemas
 class ConversationCreate(BaseModel):
@@ -296,3 +294,5 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
+ist[str]
+
