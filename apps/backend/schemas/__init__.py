@@ -39,4 +39,3 @@ class CaseyQuestionResponse:
 
 
 __all__ = ["ProjectQuestionCreate", "CaseyQuestionResponse", "ProjectType"]
-

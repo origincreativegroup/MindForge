@@ -90,4 +90,3 @@ class RealTimeCollaboration:
         # For "general" or unknown types no extra fields are added beyond the
         # coordinates and timestamp.
         return metadata
-
