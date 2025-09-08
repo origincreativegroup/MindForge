@@ -3,6 +3,7 @@ name = "mindforge"
 version = "0.1.0"
 description = "MindForge monorepo"
 authors = ["MindForge Contributors"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -18,7 +19,6 @@ orjson = "^3.9.15"
 pypdf = "^4.0.1"
 python-dotenv = "^1.0.0"
 langchain = "^0.1.17"
-package-mode = false
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
