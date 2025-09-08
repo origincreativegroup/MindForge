@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import ProcessVisualizer from './components/ProcessVisualizer.jsx';
 import BusinessDashboard from './components/BusinessDashboard.jsx';
 import CreativeWorkspace from './components/CreativeWorkspace.jsx';
 import './components/BusinessDashboard.css';
@@ -48,3 +46,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
