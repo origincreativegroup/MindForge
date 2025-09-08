@@ -50,6 +50,19 @@ print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features di
 if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
 
+    STATE = {
+        "messages": [],
+        "process": {
+            "steps": [],
+            "actors": [],
+            "tools": [],
+            "decisions": [],
+            "inputs": [],
+            "outputs": [],
+        },
+        "session_analytics": {"total_interactions": 0, "start_time": time.time()},
+    }
+
     def infer_tone(text: str) -> str:
         """Analyze text tone for adaptive responses"""
         if not text:
@@ -220,6 +233,14 @@ if not USE_DATABASE:
         STATE["messages"].append(user_msg)
         STATE["session_analytics"]["total_interactions"] += 1
 
+        # Generate assistant reply and update process context
+        response_text = generate_adaptive_reply(content)
+        chips = generate_smart_chips(response_text)
+        elements = extract_process_elements(content)
+        for key, values in elements.items():
+            for v in values:
+                if v not in STATE["process"][key]:
+                    STATE["process"][key].append(v)
 
         # Stream response
         async def generate_response():
@@ -227,14 +248,14 @@ if not USE_DATABASE:
                 yield f"data: {char}\n\n"
                 await asyncio.sleep(0.02)
 
-            STATE["messages"].append({
-                "role": "assistant",
-                "content": response_text,
-                "created_at": time.time(),
-                "metadata": {
-
+            STATE["messages"].append(
+                {
+                    "role": "assistant",
+                    "content": response_text,
+                    "created_at": time.time(),
+                    "chips": chips,
                 }
-            })
+            )
             yield "data: [DONE]\n\n"
 
         return StreamingResponse(generate_response(), media_type="text/event-stream")
