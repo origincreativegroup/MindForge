@@ -9,7 +9,4 @@ apps/frontend/node_modules/
 dist/
 build/
 .env
-**/target/
-*.db
-*.sqlite
-*.sqlite3
+

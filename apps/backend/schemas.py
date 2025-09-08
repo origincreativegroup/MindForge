@@ -1,7 +1,5 @@
 from datetime import datetime, date
-from typing import Dict, List, Optional, Any, Union
-from enum import Enum
-from pydantic import BaseModel, Field, validator
+
 
 # Conversation schemas
 class ConversationCreate(BaseModel):
@@ -296,25 +294,5 @@ class SkillGap(BaseModel):
     current_level: int
     target_level: int
     gap: int
-
-
-# ---------------------------------------------------------------------------
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-    class Config:
-        orm_mode = True
-
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-
-class ProjectAnalysisResponse(BaseModel):
-    project_id: int
-    analysis_complete: bool
-    insights: List[ProjectInsight]
-    suggestions: List[str]
+ist[str]
 
