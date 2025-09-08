@@ -7,8 +7,16 @@ import sys
 import os
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).resolve().parents[3]
+# Add project root to path. The original script assumed the file lived three
+# directories below the project root which isn't the case in this kata.  This
+# caused an ``IndexError`` during test collection when ``parents[3]`` was
+# accessed on a path that wasn't that deep.  Instead of relying on a fixed
+# number of parents, walk up the directory tree until we find the repository
+# root (identified by the presence of the ``apps`` directory).
+project_root = Path(__file__).resolve()
+while not (project_root / "apps").exists() and project_root != project_root.parent:
+    project_root = project_root.parent
+
 sys.path.insert(0, str(project_root))
 
 def test_imports():
