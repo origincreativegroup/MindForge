@@ -5,15 +5,14 @@ import re
 import random
 from pathlib import Path
 from typing import Dict, List
-from fastapi import FastAPI, Request, UploadFile, File
+from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from .middleware import AssetAccessMiddleware
 
-# Fix: Use absolute imports instead of relative imports
 try:
-    from routers import workforce
+    from .routers import workforce
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")
@@ -23,7 +22,6 @@ BASE = Path(__file__).parent
 
 # Initialize FastAPI app
 app = FastAPI(title="Casey · MindForge", debug=True)
-app.add_middleware(AssetAccessMiddleware)
 
 # Setup static files and templates
 (BASE/"static").mkdir(exist_ok=True)
@@ -43,13 +41,6 @@ print(f"🔧 Configuration:")
 print(f"   📊 Database Mode: {'Enabled' if USE_DATABASE else 'Disabled (Simple Mode)'}")
 print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features disabled)'}")
 
-if USE_DATABASE:
-    # Import and setup database routers
-    try:
-        from routers import conversations, nextq, skills
-        app.include_router(conversations.router, prefix="/api")
-        app.include_router(nextq.router, prefix="/api")
-        app.include_router(skills.router, prefix="/api")
         print("✅ Database mode enabled - full functionality available")
     except ImportError as e:
         print(f"⚠️  Database imports failed: {e}")
@@ -58,18 +49,6 @@ if USE_DATABASE:
 
 if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
-
-    # Enhanced state management for simple mode
-    STATE = {
-        "messages": [],
-        "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
-        "conversation_count": 0,
-        "session_analytics": {
-            "start_time": time.time(),
-            "total_interactions": 0,
-            "process_complexity_score": 0
-        }
-    }
 
     def infer_tone(text: str) -> str:
         """Analyze text tone for adaptive responses"""
@@ -229,7 +208,6 @@ if not USE_DATABASE:
             "automation_potential": 100 - risk_score if "automated" in process_text else risk_score
         }
 
-    # API Endpoints for Simple Mode
     @app.get("/api/conversations/1/message_stream")
     async def message_stream(content: str):
         """Handle chat messages with intelligent processing"""
@@ -242,28 +220,6 @@ if not USE_DATABASE:
         STATE["messages"].append(user_msg)
         STATE["session_analytics"]["total_interactions"] += 1
 
-        # Extract and update process elements
-        extracted = extract_process_elements(content)
-
-        # Merge with existing process
-        for key in extracted:
-            for item in extracted[key]:
-                if item not in STATE["process"][key]:
-                    STATE["process"][key].append(item)
-
-        # Update complexity score
-        metrics = calculate_process_metrics()
-        STATE["session_analytics"]["process_complexity_score"] = metrics["complexity_score"]
-
-        # Generate adaptive response
-        response_text = generate_adaptive_reply(content)
-
-        # Add intelligence insights
-        if metrics["risk_score"] > 60:
-            response_text += " 💡 I'm noticing some high-risk areas we should address."
-
-        if metrics["automation_potential"] > 70:
-            response_text += " 🤖 This process has good automation potential!"
 
         # Stream response
         async def generate_response():
@@ -271,15 +227,12 @@ if not USE_DATABASE:
                 yield f"data: {char}\n\n"
                 await asyncio.sleep(0.02)
 
-            # Store assistant message
             STATE["messages"].append({
                 "role": "assistant",
                 "content": response_text,
                 "created_at": time.time(),
                 "metadata": {
-                    "extracted_elements": len(extracted["steps"]) + len(extracted["actors"]) + len(extracted["tools"]),
-                    "complexity": metrics["complexity"],
-                    "confidence": 0.8
+
                 }
             })
             yield "data: [DONE]\n\n"
@@ -417,8 +370,6 @@ if not USE_DATABASE:
                 status_code=500
             )
 
-# Common routes for both modes
-from datetime import datetime
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -439,7 +390,7 @@ async def chat(request: Request, message: str = Form("")):
             {
                 "role": "user",
                 "html": text,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+
             }
         )
 
@@ -453,12 +404,12 @@ async def chat(request: Request, message: str = Form("")):
         for m in STATE["messages"]:
             m.pop("chips", None)
 
+
         STATE["messages"].append(
             {
                 "role": "assistant",
                 "html": reply,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-                "chips": generate_smart_chips(reply),
+
             }
         )
 

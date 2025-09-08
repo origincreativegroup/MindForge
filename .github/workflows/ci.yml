@@ -1,28 +1,5 @@
 name: CI
+        if: matrix.app == 'frontend'
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm test --if-present
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test-results
-          if-no-files-found: ignore
