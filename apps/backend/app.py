@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from .middleware import AssetAccessMiddleware
 
 # Use absolute imports or handle missing modules gracefully
 try:
@@ -67,7 +68,7 @@ if USE_DATABASE:
 
 if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
-    
+
     try:
         from services.business_partner import BusinessPartnerService
         business_partner = BusinessPartnerService()
@@ -248,10 +249,10 @@ if not USE_DATABASE:
         }
 
     from services.business_partner import BusinessPartnerService
-    
+
     # Initialize Business Partner Service
     business_partner = BusinessPartnerService()
-    
+
     # Business Partner API Endpoints (only available in simple mode for now)
     @app.post("/api/business/analyze")
     async def analyze_business_conversation(content: str, conversation_id: str = "default"):
@@ -261,7 +262,7 @@ if not USE_DATABASE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/opportunities")
     async def get_opportunities(conversation_id: str = "default"):
         """Get business opportunities"""
@@ -283,7 +284,7 @@ if not USE_DATABASE:
             })
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/portfolio/analyze")
     async def analyze_portfolio(portfolio_data: dict, conversation_id: str = "default"):
         """Analyze portfolio for optimization"""
@@ -292,7 +293,7 @@ if not USE_DATABASE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/rates/analyze")
     async def analyze_rates(current_info: dict, conversation_id: str = "default"):
         """Get rate optimization recommendations"""
@@ -301,7 +302,7 @@ if not USE_DATABASE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/brand/analyze")
     async def analyze_brand(current_brand: dict, conversation_id: str = "default"):
         """Get brand building strategy"""
@@ -310,7 +311,7 @@ if not USE_DATABASE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/intelligence")
     async def get_business_intelligence(conversation_id: str = "default"):
         """Get business intelligence dashboard"""
@@ -319,7 +320,7 @@ if not USE_DATABASE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/dashboard")
     async def get_business_dashboard(conversation_id: str = "default"):
         """Get complete business dashboard"""
@@ -327,7 +328,7 @@ if not USE_DATABASE:
             # Get all business intelligence data
             opportunities = business_partner.get_opportunities(conversation_id)
             intelligence = business_partner.get_business_intelligence(conversation_id)
-            
+
             # Mock some additional data for demonstration
             return JSONResponse({
                 "summary": {
@@ -373,19 +374,19 @@ if not USE_DATABASE:
             if BUSINESS_PARTNER_AVAILABLE:
                 business_analysis = business_partner.analyze_business_conversation(content, "1")
                 response_text = business_analysis["recommended_response"]
-                
+
                 # Add business insights to response
                 if business_analysis.get("business_opportunities"):
                     opportunities_count = len(business_analysis["business_opportunities"])
                     response_text += f" 💼 I found {opportunities_count} business opportunities for you!"
-                    
+
                 if business_analysis.get("rate_recommendations"):
                     rate_info = business_analysis["rate_recommendations"]
                     if rate_info.get("optimized_rate"):
                         response_text += f" 💰 Rate optimization suggestion: {rate_info['optimized_rate']}"
             else:
                 raise Exception("Business partner not available")
-                    
+
         except Exception as e:
             print(f"Business analysis error: {e}")
             # Fallback to original logic
@@ -394,11 +395,11 @@ if not USE_DATABASE:
                 for item in extracted[key]:
                     if item not in STATE["process"][key]:
                         STATE["process"][key].append(item)
-            
+
             metrics = calculate_process_metrics()
             STATE["session_analytics"]["process_complexity_score"] = metrics["complexity_score"]
             response_text = generate_adaptive_reply(content)
-            
+
             if metrics["risk_score"] > 60:
                 response_text += " 💡 I'm noticing some high-risk areas we should address."
             if metrics["automation_potential"] > 70:
@@ -566,7 +567,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/opportunities")
     async def get_opportunities(conversation_id: str = "default"):
         """Get business opportunities"""
@@ -588,7 +589,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             })
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/portfolio/analyze")
     async def analyze_portfolio(portfolio_data: dict, conversation_id: str = "default"):
         """Analyze portfolio for optimization"""
@@ -597,7 +598,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/rates/analyze")
     async def analyze_rates(current_info: dict, conversation_id: str = "default"):
         """Get rate optimization recommendations"""
@@ -606,7 +607,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.post("/api/business/brand/analyze")
     async def analyze_brand(current_brand: dict, conversation_id: str = "default"):
         """Get brand building strategy"""
@@ -615,7 +616,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/intelligence")
     async def get_business_intelligence(conversation_id: str = "default"):
         """Get business intelligence dashboard"""
@@ -624,7 +625,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             return JSONResponse(result)
         except Exception as e:
             return JSONResponse({"error": str(e)}, status_code=500)
-    
+
     @app.get("/api/business/dashboard")
     async def get_business_dashboard(conversation_id: str = "default"):
         """Get complete business dashboard"""
@@ -632,7 +633,7 @@ if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
             # Get all business intelligence data
             opportunities = business_partner.get_opportunities(conversation_id)
             intelligence = business_partner.get_business_intelligence(conversation_id)
-            
+
             # Mock some additional data for demonstration
             return JSONResponse({
                 "summary": {

@@ -332,7 +332,7 @@ class LearningGoal(Base):
 
 class ProjectType(PyEnum):
     """Project types for creative projects."""
-    
+
     website_mockup = "website_mockup"
     social_media = "social_media"
     print_graphic = "print_graphic"
@@ -344,7 +344,7 @@ class ProjectType(PyEnum):
 
 class QuestionType(PyEnum):
     """Types of questions that can be asked."""
-    
+
     choice = "choice"
     text = "text"
     boolean = "boolean"
