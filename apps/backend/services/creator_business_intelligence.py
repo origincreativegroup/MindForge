@@ -9,7 +9,7 @@ import openai
 from sqlalchemy.orm import Session
 
 from .models import Project, Skill, Client, Asset, ProjectStatus
-from ..schemas import ProjectStatus as ProjectStatusEnum
+from ..schemas import ProjectType
 
 
 @dataclass
