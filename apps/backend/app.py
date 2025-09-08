@@ -9,18 +9,10 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from .middleware import AssetAccessMiddleware
 
-# Use absolute imports or handle missing modules gracefully
 try:
-    from middleware import AssetAccessMiddleware
-    MIDDLEWARE_AVAILABLE = True
-except ImportError:
-    print("⚠️  Middleware not available")
-    MIDDLEWARE_AVAILABLE = False
-
-# Fix: Use absolute imports instead of relative imports
-try:
-    from routers import workforce
+    from .routers import workforce
     WORKFORCE_ROUTER_AVAILABLE = True
 except ImportError:
     print("⚠️  Workforce router not available")
@@ -30,8 +22,6 @@ BASE = Path(__file__).parent
 
 # Initialize FastAPI app
 app = FastAPI(title="Casey · MindForge", debug=True)
-if MIDDLEWARE_AVAILABLE:
-    app.add_middleware(AssetAccessMiddleware)
 
 # Setup static files and templates
 (BASE/"static").mkdir(exist_ok=True)
@@ -51,14 +41,6 @@ print(f"🔧 Configuration:")
 print(f"   📊 Database Mode: {'Enabled' if USE_DATABASE else 'Disabled (Simple Mode)'}")
 print(f"   🔑 API Key: {'Set' if OPENAI_API_KEY else 'Not set (LLM features disabled)'}")
 
-if USE_DATABASE:
-    # Import and setup database routers
-    try:
-        from routers import conversations, nextq, skills, creative_projects
-        app.include_router(conversations.router, prefix="/api")
-        app.include_router(nextq.router, prefix="/api")
-        app.include_router(skills.router, prefix="/api")
-        app.include_router(creative_projects.router)
         print("✅ Database mode enabled - full functionality available")
     except ImportError as e:
         print(f"⚠️  Database imports failed: {e}")
@@ -67,27 +49,6 @@ if USE_DATABASE:
 
 if not USE_DATABASE:
     print("🧠 Simple mode enabled - using in-memory processing")
-    
-    try:
-        from services.business_partner import BusinessPartnerService
-        business_partner = BusinessPartnerService()
-        BUSINESS_PARTNER_AVAILABLE = True
-        print("✅ Business Partner AI enabled")
-    except ImportError as e:
-        print(f"⚠️  Business Partner imports failed: {e}")
-        BUSINESS_PARTNER_AVAILABLE = False
-
-    # Enhanced state management for simple mode
-    STATE = {
-        "messages": [],
-        "process": {"steps": [], "actors": [], "tools": [], "decisions": [], "inputs": [], "outputs": []},
-        "conversation_count": 0,
-        "session_analytics": {
-            "start_time": time.time(),
-            "total_interactions": 0,
-            "process_complexity_score": 0
-        }
-    }
 
     def infer_tone(text: str) -> str:
         """Analyze text tone for adaptive responses"""
@@ -247,115 +208,6 @@ if not USE_DATABASE:
             "automation_potential": 100 - risk_score if "automated" in process_text else risk_score
         }
 
-    from services.business_partner import BusinessPartnerService
-    
-    # Initialize Business Partner Service
-    business_partner = BusinessPartnerService()
-    
-    # Business Partner API Endpoints (only available in simple mode for now)
-    @app.post("/api/business/analyze")
-    async def analyze_business_conversation(content: str, conversation_id: str = "default"):
-        """Analyze conversation with business intelligence"""
-        try:
-            result = business_partner.analyze_business_conversation(content, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/opportunities")
-    async def get_opportunities(conversation_id: str = "default"):
-        """Get business opportunities"""
-        try:
-            opportunities = business_partner.get_opportunities(conversation_id)
-            return JSONResponse({
-                "opportunities": [
-                    {
-                        "type": opp.type,
-                        "title": opp.title,
-                        "description": opp.description,
-                        "platform": opp.platform,
-                        "budget_range": opp.budget_range,
-                        "skills_match": opp.skills_match,
-                        "urgency": opp.urgency,
-                        "proposal_suggestions": opp.proposal_suggestions
-                    } for opp in opportunities
-                ]
-            })
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/portfolio/analyze")
-    async def analyze_portfolio(portfolio_data: dict, conversation_id: str = "default"):
-        """Analyze portfolio for optimization"""
-        try:
-            result = business_partner.analyze_portfolio(portfolio_data, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/rates/analyze")
-    async def analyze_rates(current_info: dict, conversation_id: str = "default"):
-        """Get rate optimization recommendations"""
-        try:
-            result = business_partner.get_rate_recommendations(current_info, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/brand/analyze")
-    async def analyze_brand(current_brand: dict, conversation_id: str = "default"):
-        """Get brand building strategy"""
-        try:
-            result = business_partner.get_brand_strategy(current_brand, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/intelligence")
-    async def get_business_intelligence(conversation_id: str = "default"):
-        """Get business intelligence dashboard"""
-        try:
-            result = business_partner.get_business_intelligence(conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/dashboard")
-    async def get_business_dashboard(conversation_id: str = "default"):
-        """Get complete business dashboard"""
-        try:
-            # Get all business intelligence data
-            opportunities = business_partner.get_opportunities(conversation_id)
-            intelligence = business_partner.get_business_intelligence(conversation_id)
-            
-            # Mock some additional data for demonstration
-            return JSONResponse({
-                "summary": {
-                    "active_opportunities": len(opportunities),
-                    "revenue_potential": "25-50% increase",
-                    "optimization_score": 0.75,
-                    "business_stage": "Growing"
-                },
-                "quick_wins": [
-                    "Increase rates by 20% for new clients",
-                    "Add case studies to portfolio",
-                    "Create 3-tier service packages"
-                ],
-                "opportunities": [{
-                    "type": opp.type,
-                    "title": opp.title,
-                    "urgency": opp.urgency,
-                    "budget_range": opp.budget_range
-                } for opp in opportunities[:3]],
-                "intelligence": intelligence,
-                "next_milestones": [
-                    {"milestone": "Rate optimization", "progress": 0.3, "eta": "2 weeks"},
-                    {"milestone": "Portfolio update", "progress": 0.1, "eta": "1 month"},
-                    {"milestone": "Specialization", "progress": 0.0, "eta": "3 months"}
-                ]
-            })
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
     @app.get("/api/conversations/1/message_stream")
     async def message_stream(content: str):
         """Handle chat messages with intelligent processing"""
@@ -368,41 +220,6 @@ if not USE_DATABASE:
         STATE["messages"].append(user_msg)
         STATE["session_analytics"]["total_interactions"] += 1
 
-        # Use business partner service for enhanced analysis
-        try:
-            if BUSINESS_PARTNER_AVAILABLE:
-                business_analysis = business_partner.analyze_business_conversation(content, "1")
-                response_text = business_analysis["recommended_response"]
-                
-                # Add business insights to response
-                if business_analysis.get("business_opportunities"):
-                    opportunities_count = len(business_analysis["business_opportunities"])
-                    response_text += f" 💼 I found {opportunities_count} business opportunities for you!"
-                    
-                if business_analysis.get("rate_recommendations"):
-                    rate_info = business_analysis["rate_recommendations"]
-                    if rate_info.get("optimized_rate"):
-                        response_text += f" 💰 Rate optimization suggestion: {rate_info['optimized_rate']}"
-            else:
-                raise Exception("Business partner not available")
-                    
-        except Exception as e:
-            print(f"Business analysis error: {e}")
-            # Fallback to original logic
-            extracted = extract_process_elements(content)
-            for key in extracted:
-                for item in extracted[key]:
-                    if item not in STATE["process"][key]:
-                        STATE["process"][key].append(item)
-            
-            metrics = calculate_process_metrics()
-            STATE["session_analytics"]["process_complexity_score"] = metrics["complexity_score"]
-            response_text = generate_adaptive_reply(content)
-            
-            if metrics["risk_score"] > 60:
-                response_text += " 💡 I'm noticing some high-risk areas we should address."
-            if metrics["automation_potential"] > 70:
-                response_text += " 🤖 This process has good automation potential!"
 
         # Stream response
         async def generate_response():
@@ -410,15 +227,12 @@ if not USE_DATABASE:
                 yield f"data: {char}\n\n"
                 await asyncio.sleep(0.02)
 
-            # Store assistant message with enhanced metadata
             STATE["messages"].append({
                 "role": "assistant",
                 "content": response_text,
                 "created_at": time.time(),
                 "metadata": {
-                    "business_intelligence": True,
-                    "confidence": 0.9,
-                    "analysis_type": "business_partner"
+
                 }
             })
             yield "data: [DONE]\n\n"
@@ -556,114 +370,6 @@ if not USE_DATABASE:
                 status_code=500
             )
 
-# Business Partner API Endpoints (conditional on availability)
-if not USE_DATABASE and BUSINESS_PARTNER_AVAILABLE:
-    @app.post("/api/business/analyze")
-    async def analyze_business_conversation(content: str, conversation_id: str = "default"):
-        """Analyze conversation with business intelligence"""
-        try:
-            result = business_partner.analyze_business_conversation(content, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/opportunities")
-    async def get_opportunities(conversation_id: str = "default"):
-        """Get business opportunities"""
-        try:
-            opportunities = business_partner.get_opportunities(conversation_id)
-            return JSONResponse({
-                "opportunities": [
-                    {
-                        "type": opp.type,
-                        "title": opp.title,
-                        "description": opp.description,
-                        "platform": opp.platform,
-                        "budget_range": opp.budget_range,
-                        "skills_match": opp.skills_match,
-                        "urgency": opp.urgency,
-                        "proposal_suggestions": opp.proposal_suggestions
-                    } for opp in opportunities
-                ]
-            })
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/portfolio/analyze")
-    async def analyze_portfolio(portfolio_data: dict, conversation_id: str = "default"):
-        """Analyze portfolio for optimization"""
-        try:
-            result = business_partner.analyze_portfolio(portfolio_data, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/rates/analyze")
-    async def analyze_rates(current_info: dict, conversation_id: str = "default"):
-        """Get rate optimization recommendations"""
-        try:
-            result = business_partner.get_rate_recommendations(current_info, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.post("/api/business/brand/analyze")
-    async def analyze_brand(current_brand: dict, conversation_id: str = "default"):
-        """Get brand building strategy"""
-        try:
-            result = business_partner.get_brand_strategy(current_brand, conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/intelligence")
-    async def get_business_intelligence(conversation_id: str = "default"):
-        """Get business intelligence dashboard"""
-        try:
-            result = business_partner.get_business_intelligence(conversation_id)
-            return JSONResponse(result)
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-    
-    @app.get("/api/business/dashboard")
-    async def get_business_dashboard(conversation_id: str = "default"):
-        """Get complete business dashboard"""
-        try:
-            # Get all business intelligence data
-            opportunities = business_partner.get_opportunities(conversation_id)
-            intelligence = business_partner.get_business_intelligence(conversation_id)
-            
-            # Mock some additional data for demonstration
-            return JSONResponse({
-                "summary": {
-                    "active_opportunities": len(opportunities),
-                    "revenue_potential": "25-50% increase",
-                    "optimization_score": 0.75,
-                    "business_stage": "Growing"
-                },
-                "quick_wins": [
-                    "Increase rates by 20% for new clients",
-                    "Add case studies to portfolio",
-                    "Create 3-tier service packages"
-                ],
-                "opportunities": [{
-                    "type": opp.type,
-                    "title": opp.title,
-                    "urgency": opp.urgency,
-                    "budget_range": opp.budget_range
-                } for opp in opportunities[:3]],
-                "intelligence": intelligence,
-                "next_milestones": [
-                    {"milestone": "Rate optimization", "progress": 0.3, "eta": "2 weeks"},
-                    {"milestone": "Portfolio update", "progress": 0.1, "eta": "1 month"},
-                    {"milestone": "Specialization", "progress": 0.0, "eta": "3 months"}
-                ]
-            })
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=500)
-
-# Common routes for both modes
-from datetime import datetime
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -684,7 +390,7 @@ async def chat(request: Request, message: str = Form("")):
             {
                 "role": "user",
                 "html": text,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+
             }
         )
 
@@ -698,12 +404,12 @@ async def chat(request: Request, message: str = Form("")):
         for m in STATE["messages"]:
             m.pop("chips", None)
 
+
         STATE["messages"].append(
             {
                 "role": "assistant",
                 "html": reply,
-                "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-                "chips": generate_smart_chips(reply),
+
             }
         )
 

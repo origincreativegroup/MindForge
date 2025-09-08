@@ -34,11 +34,11 @@ class CollaborationService:
                 comment_type=comment_type,
                 metadata=metadata or {}
             )
-            
+
             self.db.add(comment)
             self.db.commit()
             self.db.refresh(comment)
-            
+
             # Log activity
             await self.log_activity(
                 project_id=project_id,
@@ -47,7 +47,7 @@ class CollaborationService:
                 description=f"Added comment: {content[:50]}...",
                 metadata={"comment_id": comment.id}
             )
-            
+
             return {
                 "id": comment.id,
                 "content": comment.content,
@@ -56,7 +56,7 @@ class CollaborationService:
                 "created_at": comment.created_at.isoformat(),
                 "metadata": comment.metadata
             }
-            
+
         except Exception as e:
             self.db.rollback()
             raise e
@@ -67,16 +67,16 @@ class CollaborationService:
             comment = self.db.query(ProjectComment).filter(
                 ProjectComment.id == comment_id
             ).first()
-            
+
             if not comment:
                 return False
-            
+
             comment.is_resolved = True
             comment.resolved_by = resolved_by
             comment.resolved_at = datetime.utcnow()
-            
+
             self.db.commit()
-            
+
             # Log activity
             await self.log_activity(
                 project_id=comment.project_id,
@@ -85,9 +85,9 @@ class CollaborationService:
                 description=f"Resolved comment: {comment.content[:50]}...",
                 metadata={"comment_id": comment_id}
             )
-            
+
             return True
-            
+
         except Exception as e:
             self.db.rollback()
             raise e
@@ -102,12 +102,12 @@ class CollaborationService:
         query = self.db.query(ProjectComment).filter(
             ProjectComment.project_id == project_id
         )
-        
+
         if not include_resolved:
             query = query.filter(ProjectComment.is_resolved == False)
-        
+
         comments = query.order_by(desc(ProjectComment.created_at)).limit(limit).all()
-        
+
         return [
             {
                 "id": comment.id,
@@ -139,10 +139,10 @@ class CollaborationService:
                 description=description,
                 metadata=metadata or {}
             )
-            
+
             self.db.add(activity)
             self.db.commit()
-            
+
         except Exception as e:
             self.db.rollback()
             # Don't raise exception for activity logging to avoid breaking main flows
@@ -158,12 +158,12 @@ class CollaborationService:
         query = self.db.query(ProjectActivity).filter(
             ProjectActivity.project_id == project_id
         )
-        
+
         if activity_types:
             query = query.filter(ProjectActivity.activity_type.in_(activity_types))
-        
+
         activities = query.order_by(desc(ProjectActivity.created_at)).limit(limit).all()
-        
+
         return [
             {
                 "id": activity.id,
@@ -192,7 +192,7 @@ class CollaborationService:
                 TeamMember.project_id == project_id,
                 TeamMember.user_id == user_id
             ).first()
-            
+
             if existing_member:
                 return {
                     "id": existing_member.id,
@@ -203,7 +203,7 @@ class CollaborationService:
                     "permissions": existing_member.permissions,
                     "joined_at": existing_member.joined_at.isoformat()
                 }
-            
+
             member = TeamMember(
                 project_id=project_id,
                 user_id=user_id,
@@ -212,11 +212,11 @@ class CollaborationService:
                 role=role,
                 permissions=permissions or {}
             )
-            
+
             self.db.add(member)
             self.db.commit()
             self.db.refresh(member)
-            
+
             # Log activity
             await self.log_activity(
                 project_id=project_id,
@@ -225,7 +225,7 @@ class CollaborationService:
                 description=f"{name} joined the team as {role}",
                 metadata={"user_id": user_id}
             )
-            
+
             return {
                 "id": member.id,
                 "user_id": member.user_id,
@@ -235,7 +235,7 @@ class CollaborationService:
                 "permissions": member.permissions,
                 "joined_at": member.joined_at.isoformat()
             }
-            
+
         except Exception as e:
             self.db.rollback()
             raise e
@@ -245,7 +245,7 @@ class CollaborationService:
         members = self.db.query(TeamMember).filter(
             TeamMember.project_id == project_id
         ).all()
-        
+
         return [
             {
                 "id": member.id,
@@ -267,11 +267,11 @@ class CollaborationService:
                 TeamMember.user_id == user_id,
                 TeamMember.project_id == project_id
             ).first()
-            
+
             if member:
                 member.last_active = datetime.utcnow()
                 self.db.commit()
-                
+
         except Exception as e:
             self.db.rollback()
             # Don't raise exception for activity updates

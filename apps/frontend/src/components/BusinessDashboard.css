@@ -30,38 +30,6 @@
   margin-bottom: 2rem;
 }
 
-.dashboard-tabs {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 4px;
-  backdrop-filter: blur(10px);
-}
-
-.tab {
-  background: none;
-  border: none;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  margin: 0 4px;
-}
-
-.tab:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.tab.active {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
 .dashboard-content {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 16px;
@@ -209,127 +177,6 @@
   opacity: 0.8;
 }
 
-/* Opportunities Tab */
-.opportunities-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.opportunity-card {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.opportunity-card:hover {
-  transform: translateY(-4px);
-}
-
-.opportunity-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-}
-
-.opportunity-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  line-height: 1.4;
-}
-
-.urgency {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.urgency.high {
-  background: rgba(239, 68, 68, 0.3);
-}
-
-.urgency.medium {
-  background: rgba(245, 158, 11, 0.3);
-}
-
-.urgency.low {
-  background: rgba(34, 197, 94, 0.3);
-}
-
-.opportunity-details {
-  margin-bottom: 1.5rem;
-}
-
-.opportunity-type {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  margin: 0 0 0.5rem 0;
-  text-transform: capitalize;
-}
-
-.opportunity-budget {
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.opportunity-action {
-  background: linear-gradient(45deg, #10b981, #34d399);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.opportunity-action:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-}
-
-/* Intelligence Tab */
-.intelligence-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.intelligence-card {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.intelligence-card h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.insight-content p {
-  margin: 0 0 0.75rem 0;
-  line-height: 1.5;
-  font-size: 0.9rem;
-}
-
-.insight-content p:last-child {
-  margin-bottom: 0;
-}
-
 /* Footer */
 .dashboard-footer {
   text-align: center;
@@ -369,14 +216,6 @@
   50% { opacity: 0.5; }
 }
 
-.no-opportunities {
-  text-align: center;
-  padding: 3rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .business-dashboard {
@@ -387,24 +226,8 @@
     font-size: 2rem;
   }
   
-  .dashboard-tabs {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .tab {
-    width: 100%;
-    text-align: center;
-  }
-  
   .summary-cards {
     grid-template-columns: 1fr;
-  }
-  
-  .opportunity-header {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
   }
   
   .milestone-header {
