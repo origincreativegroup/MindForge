@@ -10,3 +10,6 @@ dist/
 build/
 .env
 **/target/
+*.db
+*.sqlite
+*.sqlite3
