@@ -1,120 +1,165 @@
 #!/usr/bin/env python3
 """
-Debug script for MindForge Casey MVP
-Checks dependencies, file structure, and common issues
+MindForge Casey - Debug Check
+
+This script validates your local dev environment:
+- Python version
+- File structure (supports both apps/backend and backend layouts)
+- Dependencies (poetry or pip)
+- Database models/config presence
+- Environment variables
+- Port 8000 availability
+- Basic import of FastAPI app
+
+Run:
+    python debug.py
 """
 
-import sys
-import os
-from pathlib import Path
-import subprocess
 import importlib.util
+import os
+import sys
+import platform
+from pathlib import Path
 
-def check_python_version():
-    """Check if Python version is compatible."""
-    version = sys.version_info
-    print(f"Python version: {version.major}.{version.minor}.{version.micro}")
-    if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Python 3.8+ required")
+
+# ---------- Helpers to support both repo layouts ----------
+
+def repo_root() -> Path:
+    return Path(__file__).parent.resolve()
+
+def has_apps_layout() -> bool:
+    return (repo_root() / "apps" / "backend" / "app.py").exists()
+
+def has_flat_backend_layout() -> bool:
+    return (repo_root() / "backend" / "app.py").exists()
+
+def ensure_sys_path():
+    """
+    Add the correct source dir to sys.path depending on layout.
+    Prefer apps/ layout; fall back to backend/ layout.
+    """
+    root = repo_root()
+    if has_apps_layout():
+        p = root / "apps"
+        if str(p) not in sys.path:
+            sys.path.append(str(p))
+        return "apps"
+    elif has_flat_backend_layout():
+        p = root / "backend"
+        if str(p) not in sys.path:
+            sys.path.append(str(root))      # allow 'from backend...' imports
+        return "backend"
+    else:
+        return "unknown"
+
+
+# ---------- Checks ----------
+
+def check_python_version() -> bool:
+    ver = platform.python_version()
+    major, minor, *_ = platform.python_version_tuple()
+    ok = int(major) >= 3 and int(minor) >= 9
+    print(f"Detected Python: {ver}")
+    if not ok:
+        print("⚠️  Python 3.9+ recommended.")
+    return ok
+
+def check_file_structure() -> bool:
+    base = repo_root()
+    required_common = ["README.md"]
+    found = True
+
+    for rel in required_common:
+        if not (base / rel).exists():
+            print(f"⚠️  Missing file: {rel}")
+            found = False
+
+    apps_layout = has_apps_layout()
+    backend_layout = has_flat_backend_layout()
+
+    if apps_layout:
+        print("✅ Found apps/ layout: apps/backend/app.py")
+    if backend_layout:
+        print("✅ Found backend/ layout: backend/app.py")
+
+    if not (apps_layout or backend_layout):
+        print("❌ Could not find FastAPI app at apps/backend/app.py or backend/app.py")
         return False
-    print("✅ Python version OK")
-    return True
 
-def check_file_structure():
-    """Check if required files exist."""
-    base = Path(__file__).parent
-    required_files = [
-        "apps/backend/app.py",
-        "run.sh",
-        "README.md"
-    ]
+    # Helpful runner hints
+    if (base / "run.sh").exists():
+        print("✅ Found run.sh")
 
-    missing_files = []
-    for file_path in required_files:
-        if not (base / file_path).exists():
-            missing_files.append(file_path)
+    if (base / "pyproject.toml").exists():
+        print("✅ Found pyproject.toml (Poetry project)")
+    elif (base / "backend" / "requirements.txt").exists():
+        print("✅ Found backend/requirements.txt (pip project)")
 
-    if missing_files:
-        print(f"❌ Missing files: {missing_files}")
-        return False
+    return found
 
-    print("✅ Core file structure OK")
-    return True
-
-def check_dependencies():
-    """Check if required Python packages are available."""
+def check_dependencies() -> bool:
     required_packages = [
         "fastapi",
         "uvicorn",
         "jinja2",
         "pydantic",
-        "httpx"
+        "httpx",
     ]
-
     optional_packages = [
         "orjson",
         "pypdf",
-        "sqlalchemy"
+        "sqlalchemy",
     ]
 
-    missing_required = []
-    missing_optional = []
-
-    for package in required_packages:
-        if importlib.util.find_spec(package) is None:
-            missing_required.append(package)
-
-    for package in optional_packages:
-        if importlib.util.find_spec(package) is None:
-            missing_optional.append(package)
+    missing_required = [pkg for pkg in required_packages if importlib.util.find_spec(pkg) is None]
+    missing_optional = [pkg for pkg in optional_packages if importlib.util.find_spec(pkg) is None]
 
     if missing_required:
         print(f"❌ Missing required packages: {missing_required}")
-        print("Run: poetry install")
+        if (repo_root() / "pyproject.toml").exists():
+            print("Run: poetry install")
+        elif (repo_root() / "backend" / "requirements.txt").exists():
+            print("Run: cd backend && pip install -r requirements.txt")
+        else:
+            print("Install with Poetry or provide backend/requirements.txt")
         return False
 
     print("✅ Required dependencies OK")
 
     if missing_optional:
         print(f"⚠️  Missing optional packages: {missing_optional}")
-        print("Some features may be limited")
+        print("Some features may be limited.")
+    else:
+        print("✅ Optional dependencies OK")
 
     return True
 
-def check_database_setup():
-    """Check database configuration."""
+def check_database_setup() -> bool:
+    layout = ensure_sys_path()
     try:
-        # Try to import database modules
-        sys.path.append(str(Path(__file__).parent / "apps"))
-
-        try:
-            from backend.models import Base, Conversation, Message, ProcessMap
-            print("✅ Database models found")
-        except ImportError as e:
-            print(f"⚠️  Database models missing: {e}")
-            return False
-
-        try:
-            from backend.db import engine, get_db
-            print("✅ Database configuration found")
-        except ImportError as e:
-            print(f"⚠️  Database configuration missing: {e}")
-            return False
-
-        return True
+        # Try imports under backend.*
+        from backend.models import Base  # noqa: F401
+        from backend.models import Conversation, Message, ProcessMap  # noqa: F401
+        print("✅ Database models found (backend.models)")
     except Exception as e:
-        print(f"⚠️  Database setup issue: {e}")
+        print(f"⚠️  Database models missing or failed to import: {e}")
         return False
 
-def check_environment():
-    """Check environment variables and configuration."""
+    try:
+        from backend.db import engine, get_db  # noqa: F401
+        print("✅ Database configuration found (backend.db)")
+    except Exception as e:
+        print(f"⚠️  Database configuration missing or failed to import: {e}")
+        return False
+
+    return True
+
+def check_environment() -> bool:
     issues = []
 
-    # Check for LLM configuration
     if not os.getenv("OPENAI_API_KEY"):
         issues.append("OPENAI_API_KEY not set (LLM features will use fallbacks)")
 
-    # Check database mode
     use_db = os.getenv("USE_DATABASE", "false").lower() == "true"
     print(f"Database mode: {'enabled' if use_db else 'disabled'}")
 
@@ -127,8 +172,7 @@ def check_environment():
 
     return True
 
-def check_ports():
-    """Check if default port is available."""
+def check_ports() -> bool:
     import socket
 
     port = 8000
@@ -141,28 +185,44 @@ def check_ports():
             print(f"✅ Port {port} is available")
             return True
 
-def run_basic_import_test():
-    """Test basic imports."""
+def run_basic_import_test() -> bool:
     try:
-        sys.path.append(str(Path(__file__).parent / "apps"))
-        from backend.app import app
-        print("✅ App imports successfully")
+        layout = ensure_sys_path()
+        from backend.app import app  # noqa: F401
+        src = "apps/backend" if layout == "apps" else "backend"
+        print(f"✅ App imports successfully from {src}")
         return True
     except Exception as e:
         print(f"❌ App import failed: {e}")
         return False
 
+
+# ---------- Suggestions ----------
+
 def suggest_fixes():
-    """Suggest common fixes."""
     print("\n🔧 Common fixes:")
-    print("1. Install dependencies: poetry install")
-    print("2. Run in simple mode: USE_DATABASE=false poetry run uvicorn apps.backend.app:app --reload")
-    print("3. Enable database mode: USE_DATABASE=true poetry run uvicorn apps.backend.app:app --reload")
-    print("4. Check logs for detailed errors")
-    print("5. Ensure you're in a virtual environment")
+    # pip flow
+    if (repo_root() / "backend" / "requirements.txt").exists():
+        print("1. Install dependencies (pip): cd backend && pip install -r requirements.txt")
+        print("2. Run in simple mode: USE_DATABASE=false python -m uvicorn backend.app:app --reload")
+        print("3. Enable database mode: USE_DATABASE=true python -m uvicorn backend.app:app --reload")
+    # poetry flow
+    if (repo_root() / "pyproject.toml").exists():
+        print("1. Install dependencies (Poetry): poetry install")
+        if has_apps_layout():
+            print("2. Run simple mode: USE_DATABASE=false poetry run uvicorn apps.backend.app:app --reload")
+            print("3. DB mode:       USE_DATABASE=true  poetry run uvicorn apps.backend.app:app --reload")
+        else:
+            print("2. Run simple mode: USE_DATABASE=false poetry run uvicorn backend.app:app --reload")
+            print("3. DB mode:       USE_DATABASE=true  poetry run uvicorn backend.app:app --reload")
+
+    print("4. On macOS run ./start-mac.sh or double-click MindForge.app")
+    print("5. Check logs for detailed errors")
+    print("6. Ensure you're in a virtual environment (e.g., `source .venv/bin/activate`)")
+
+# ---------- Main ----------
 
 def main():
-    """Main debug function."""
     print("🔍 MindForge Casey - Debug Check")
     print("=" * 40)
 
@@ -187,15 +247,19 @@ def main():
             results.append(False)
 
     print("\n" + "=" * 40)
-    passed = sum(results)
+    passed = sum(1 for r in results if r)
     total = len(results)
 
     if passed == total:
         print("🎉 All checks passed! You should be able to run the application.")
-        print("Try: ./run.sh or poetry run uvicorn apps.backend.app:app --reload")
+        if has_apps_layout():
+            print("Try: ./run.sh  or  poetry run uvicorn apps.backend.app:app --reload")
+        else:
+            print("Try: ./run.sh  or  python -m uvicorn backend.app:app --reload")
     else:
         print(f"⚠️  {passed}/{total} checks passed. See issues above.")
         suggest_fixes()
+
 
 if __name__ == "__main__":
     main()

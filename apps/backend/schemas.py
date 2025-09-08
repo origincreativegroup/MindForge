@@ -308,7 +308,12 @@ class ProjectType(str, Enum):
     print_graphic = "print_graphic"
     logo_design = "logo_design"
     ui_design = "ui_design"
+    video = "video"
     branding = "branding"
+
+
+# Import QuestionType and ProjectStatus from models for the project questioner
+from .services.models import QuestionType, ProjectStatus
 
 
 class CreativeProjectCreate(BaseModel):
@@ -335,7 +340,7 @@ class CreativeProject(BaseModel):
     extracted_text: Optional[str] = None
     tags: Optional[List[str]] = None
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -343,11 +348,23 @@ class CreativeProject(BaseModel):
 class ProjectQuestionCreate(BaseModel):
     project_id: int
     question: str
-    question_type: str
+    question_type: QuestionType
+    options: Optional[List[str]] = None
+    priority: int = 2
+
+
+class ProjectQuestionOut(ProjectQuestionCreate):
+    id: int
     is_answered: bool = False
     answer: Optional[str] = None
+    answered_at: Optional[datetime] = None
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
 
 
+# Keep the old ProjectQuestion schema for backward compatibility
 class ProjectQuestion(BaseModel):
     id: int
     project_id: int
@@ -357,11 +374,51 @@ class ProjectQuestion(BaseModel):
     answer: Optional[str] = None
     answered_at: Optional[datetime] = None
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
 
+# Project questioner schemas (Casey functionality)
+class CaseyQuestionResponse(BaseModel):
+    question_id: int
+    question: str
+    question_type: QuestionType
+    options: Optional[List[str]] = None
+    context: str
+    priority: int
+    follow_up_questions: Optional[List[str]] = None
+
+
+# Enhanced creative project schemas for questioner (alternative to existing)
+class CreativeProjectForQuestioner(BaseModel):
+    title: str
+    short_tagline: Optional[str] = None
+    project_type: ProjectType
+    status: ProjectStatus = ProjectStatus.pitch
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    client_id: Optional[int] = None
+    disciplines: List[str] = []
+    skill_ids: List[int] = []
+    primary_tool_ids: List[int] = []
+    tag_ids: List[int] = []
+    collection_ids: List[int] = []
+    hero_asset_id: Optional[int] = None
+    extracted_text: Optional[str] = None
+    dimensions: Optional[Dict[str, int]] = None
+    color_palette: Optional[List[str]] = None
+
+
+class CreativeProjectOutForQuestioner(CreativeProjectForQuestioner):
+    id: int
+    questions: List[ProjectQuestionOut] = []
+
+    class Config:
+        orm_mode = True
+
+
+# Existing project schemas for backward compatibility
 class ProjectQuestionUpdate(BaseModel):
     answer: str
 
@@ -382,7 +439,7 @@ class ProjectFile(BaseModel):
     file_type: str
     file_size: int
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -403,7 +460,7 @@ class ProjectInsight(BaseModel):
     description: str
     confidence: float
     created_at: datetime
-    
+
     class Config:
         orm_mode = True
 
@@ -412,12 +469,6 @@ class ProjectUploadResponse(BaseModel):
     project: CreativeProject
     questions: List[ProjectQuestion]
     next_steps: List[str]
-
-
-class CaseyQuestionResponse(BaseModel):
-    question: str
-    question_type: str
-    context: Optional[str] = None
 
 
 class ProjectAnalysisResponse(BaseModel):
