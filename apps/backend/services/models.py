@@ -12,12 +12,13 @@ from sqlalchemy import (
     Date,
     Boolean,
     Enum,
+    Float,
     Table,
     Index,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -79,7 +80,7 @@ class ProjectStatus(PyEnum):
 
 class ProjectType(PyEnum):
     """Types of creative projects."""
-    
+
     branding = "branding"
     website_mockup = "website_mockup"
     social_media = "social_media"
@@ -159,14 +160,22 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=True)  # Alias for title for reporting compatibility
     short_tagline = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.pitch, nullable=False)
+    project_type = Column(String, default="general", nullable=False)  # For reporting service
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     client_id = Column(Integer, ForeignKey("clients.id"), nullable=True)
     disciplines = Column(JSON, default=list)
+    dimensions = Column(JSON, default=dict)  # For reporting service
+    color_palette = Column(JSON, default=list)  # For reporting service
+    tags = Column(JSON, default=list)  # For reporting service
     hero_asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
-    
+
     # Analysis fields
     project_type = Column(Enum(ProjectType), nullable=True)
     file_path = Column(String, nullable=True)
@@ -176,7 +185,7 @@ class Project(Base):
 
     client = relationship("Client", back_populates="projects")
     hero_asset = relationship("Asset", foreign_keys=[hero_asset_id])
-    assets = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    assets = relationship("Asset", foreign_keys="Asset.project_id", back_populates="project", cascade="all, delete-orphan")
     roles = relationship("Role", back_populates="project", cascade="all, delete-orphan")
     deliverables = relationship("Deliverable", back_populates="project", cascade="all, delete-orphan")
     case_study = relationship("CaseStudy", back_populates="project", uselist=False)
@@ -278,7 +287,7 @@ class Asset(Base):
     nda_group = Column(String, nullable=True)
     expires_at = Column(DateTime, nullable=True)
 
-    project = relationship("Project", back_populates="assets")
+    project = relationship("Project", foreign_keys=[project_id], back_populates="assets")
     rights = relationship("RightsConsent", back_populates="assets")
     whitelist_entries = relationship(
         "AssetWhitelist", back_populates="asset", cascade="all, delete-orphan"

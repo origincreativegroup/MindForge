@@ -11,19 +11,19 @@ from ..schemas import ProjectType
 
 class CreativeProjectAnalyzer(ABC):
     """Base class for creative project analysis and evaluation."""
-    
+
     def __init__(self):
         self.analysis_cache = {}
-    
+
     @abstractmethod
     async def analyze_project(self, project: CreativeProject) -> Dict[str, Any]:
         """Analyze a creative project and return insights."""
         pass
-    
+
     async def generate_insights(self, project: CreativeProject) -> List[Dict[str, Any]]:
         """Generate basic insights for a project."""
         insights = []
-        
+
         # Basic project information insight
         insights.append({
             'insight_type': 'basic_info',
@@ -36,9 +36,9 @@ class CreativeProjectAnalyzer(ABC):
                 'project_type': project.project_type.value if project.project_type else None
             }
         })
-        
+
         return insights
-    
+
     def _load_design_principles(self) -> Dict[str, Any]:
         """Load design principles for evaluation."""
         return {
@@ -63,7 +63,7 @@ class CreativeProjectAnalyzer(ABC):
                 'hierarchy_levels': ['h1', 'h2', 'h3', 'body', 'caption']
             }
         }
-    
+
     def _load_brand_guidelines(self) -> Dict[str, Any]:
         """Load brand guidelines for consistency checks."""
         return {
@@ -71,7 +71,7 @@ class CreativeProjectAnalyzer(ABC):
             'typography_consistency': 0.8,
             'style_consistency': 0.85
         }
-    
+
     def _load_accessibility_rules(self) -> Dict[str, Any]:
         """Load accessibility rules and standards."""
         return {

@@ -5,7 +5,7 @@ description = "MindForge monorepo"
 authors = ["MindForge Contributors"]
 
 [tool.poetry.dependencies]
-python = ">=3.11"
+python = "^3.10"
 fastapi = "^0.115.0"
 uvicorn = {extras = ["standard"], version = "^0.30.6"}
 jinja2 = "^3.1.4"
@@ -18,11 +18,6 @@ orjson = "^3.9.15"
 pypdf = "^4.0.1"
 python-dotenv = "^1.0.0"
 langchain = "^0.1.17"
-openai = "^1.0.0"
-requests = "^2.31.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^8.2.0"
 
 [build-system]
 requires = ["poetry-core"]
