@@ -1,6 +1,4 @@
 """
-Advanced AI Engine for Casey - Sophisticated process intelligence and conversation AI
-"""
 import re
 import json
 import time
@@ -13,7 +11,6 @@ from dataclasses import dataclass, field
 @dataclass
 class ProcessInsight:
     """Represents an AI-generated insight about a process"""
-    type: str  # optimization, risk, compliance, performance
     confidence: float
     title: str
     description: str
@@ -22,15 +19,12 @@ class ProcessInsight:
     metrics: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
-class ConversationContext:
-    """Advanced context tracking for conversations"""
-    user_expertise: str = "beginner"  # beginner, intermediate, expert
-    domain: str = "general"  # finance, hr, engineering, sales, etc.
     emotional_state: str = "neutral"
     conversation_pattern: str = "exploratory"
     goals: List[str] = field(default_factory=list)
     pain_points: List[str] = field(default_factory=list)
     preferences: Dict[str, Any] = field(default_factory=dict)
+
 
 class AdvancedCaseyAI:
     """
@@ -94,6 +88,7 @@ class AdvancedCaseyAI:
                     "common_processes": ["development", "testing", "deployment", "incident response"],
                     "standards": ["CI/CD", "code review", "documentation"],
                     "key_metrics": ["deployment frequency", "lead time", "error rate"]
+
                 }
             },
             "cognitive_biases": [
@@ -103,7 +98,7 @@ class AdvancedCaseyAI:
             "optimization_patterns": [
                 "parallel processing", "automation", "elimination", "standardization",
                 "batching", "delegation", "exception handling", "continuous improvement"
-            ]
+
         }
 
     def analyze_conversation_turn(self, user_input: str, conversation_id: str = "default") -> Dict[str, Any]:
@@ -135,7 +130,7 @@ class AdvancedCaseyAI:
             "analysis": analysis,
             "insights": insights,
             "context": context,
-            "recommended_response": self._generate_smart_response(analysis, context, insights)
+
         }
 
     def _analyze_intent(self, text: str) -> Dict[str, float]:
@@ -529,6 +524,7 @@ class AdvancedCaseyAI:
             return self._generate_optimization_response(analysis, insights)
         elif primary_intent == "solve_problem":
             return self._generate_problem_solving_response(analysis, insights)
+
         else:
             return self._generate_discovery_response(analysis, context)
 
@@ -614,6 +610,7 @@ class AdvancedCaseyAI:
         ]
 
         return random.choice(discovery_questions)
+
 
     def _update_context(self, user_input: str, context: ConversationContext):
         """Update conversation context based on new input"""
@@ -802,6 +799,7 @@ class ConversationAI:
                 "What manual steps could be automated?",
                 "How do you handle peak volumes?",
                 "What metrics do you track?"
+
             ]
         }
 
@@ -814,3 +812,4 @@ class ConversationAI:
         else:
             # Generate synthesis question
             return "Based on everything you've shared, what would you say is the most important improvement to tackle first?"
+

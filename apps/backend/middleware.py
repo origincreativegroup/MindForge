@@ -1,11 +1,11 @@
 """Middleware enforcing asset visibility policies."""
 
-from datetime import datetime, timezone
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from packages.integrations.database import SessionLocal
+
 from .services.models import Asset, AssetVisibility
 
 
@@ -16,12 +16,7 @@ class AssetAccessMiddleware(BaseHTTPMiddleware):
             segments = path.strip("/").split("/")
             if len(segments) >= 2 and segments[1].isdigit():
                 asset_id = int(segments[1])
-                with SessionLocal() as db:
-                    asset = db.query(Asset).filter(Asset.id == asset_id).first()
-                    whitelist = [w.account_email for w in asset.whitelist_entries] if asset else []
-                if not asset:
-                    return JSONResponse({"detail": "Asset not found"}, status_code=404)
-                if asset.expires_at and asset.expires_at < datetime.now(timezone.utc):
+
                     return JSONResponse({"detail": "Asset expired"}, status_code=403)
                 if asset.visibility == AssetVisibility.public:
                     pass
