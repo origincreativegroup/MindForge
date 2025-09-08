@@ -78,9 +78,22 @@ class ProjectStatus(PyEnum):
     archived = "archived"
 
 
-class ProjectType(PyEnum):
-    """Types of creative projects."""
+class CreativeProjectStatus(PyEnum):
+    """Lifecycle stages for creative projects used in tests."""
 
+    UPLOADED = "uploaded"
+    ANALYZING = "analyzing"
+    NEEDS_INFO = "needs_info"
+    IN_PROGRESS = "in_progress"
+    REVIEW = "review"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+
+class ProjectType(PyEnum):
+    """Supported project types."""
+
+    # Lowercase names for legacy compatibility
     branding = "branding"
     website_mockup = "website_mockup"
     social_media = "social_media"
@@ -91,6 +104,34 @@ class ProjectType(PyEnum):
     ui_ux = "ui_ux"
     packaging = "packaging"
     logo_design = "logo_design"
+
+    # Additional types used by questioner and services
+    print_graphic = "print_graphic"
+    video = "video"
+    ui_design = "ui_design"
+    presentation = "presentation"
+    mobile_app = "mobile_app"
+    other = "other"
+
+    # Uppercase aliases for convenience in other modules
+    WEBSITE_MOCKUP = "website_mockup"
+    SOCIAL_MEDIA = "social_media"
+    PRINT_GRAPHIC = "print_graphic"
+    VIDEO = "video"
+    LOGO_DESIGN = "logo_design"
+    UI_DESIGN = "ui_design"
+    BRANDING = "branding"
+    PRESENTATION = "presentation"
+    MOBILE_APP = "mobile_app"
+    OTHER = "other"
+
+
+class QuestionType(PyEnum):
+    """Supported question formats."""
+
+    text = "text"
+    choice = "choice"
+    boolean = "boolean"
 
 
 class AssetType(PyEnum):
@@ -110,6 +151,88 @@ class AssetVisibility(PyEnum):
     public = "public"
     gated = "gated"
     private = "private"
+
+
+class CreativeProject(Base):
+    """Minimal creative project model used in tests."""
+
+    __tablename__ = "creative_projects"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    project_type = Column(Enum(ProjectType), nullable=False)
+    status = Column(Enum(CreativeProjectStatus), default=CreativeProjectStatus.UPLOADED, nullable=False)
+    description = Column(Text, nullable=True)
+    original_filename = Column(String(500), nullable=True)
+    file_path = Column(String(1000), nullable=True)
+    file_size = Column(Integer, nullable=True)
+    mime_type = Column(String(100), nullable=True)
+    project_metadata = Column(JSON, default=dict)
+    extracted_text = Column(Text, nullable=True)
+    color_palette = Column(JSON, nullable=True)
+    dimensions = Column(JSON, nullable=True)
+    tags = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    questions = relationship("ProjectQuestion", back_populates="project", cascade="all, delete-orphan")
+    files = relationship("ProjectFile", back_populates="project", cascade="all, delete-orphan")
+    insights = relationship("ProjectInsight", back_populates="project", cascade="all, delete-orphan")
+
+
+class ProjectQuestion(Base):
+    """Questions associated with a creative project."""
+
+    __tablename__ = "project_questions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    question = Column(Text, nullable=False)
+    question_type = Column(String(50))
+    options = Column(JSON, nullable=True)
+    answer = Column(Text, nullable=True)
+    is_answered = Column(Integer, default=0)
+    priority = Column(Integer, default=1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    answered_at = Column(DateTime, nullable=True)
+
+    project = relationship("CreativeProject", back_populates="questions")
+
+
+class ProjectFile(Base):
+    """Files uploaded for a creative project."""
+
+    __tablename__ = "project_files"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    filename = Column(String(500), nullable=False)
+    file_path = Column(String(1000), nullable=False)
+    file_type = Column(String(50), default="original")
+    mime_type = Column(String(100), nullable=True)
+    file_size = Column(Integer, nullable=True)
+    processing_status = Column(String(50), default="pending")
+    processing_metadata = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("CreativeProject", back_populates="files")
+
+
+class ProjectInsight(Base):
+    """Analysis insights for a creative project."""
+
+    __tablename__ = "project_insights"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    project_id = Column(Integer, ForeignKey("creative_projects.id"), nullable=False)
+    insight_type = Column(String(100))
+    title = Column(String(255))
+    description = Column(Text, nullable=True)
+    score = Column(Float, nullable=True)
+    data = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("CreativeProject", back_populates="insights")
 
 
 # Association tables --------------------------------------------------------
@@ -355,18 +478,5 @@ class LearningGoal(Base):
     due_date = Column(Date, nullable=True)
 
     skill = relationship("Skill", back_populates="goals")
-
-
-class ProjectInsight(Base):
-    __tablename__ = "project_insights"
-
-    id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    insight_type = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    score = Column(Integer, nullable=False)  # Store as integer (0-100) to avoid float precision issues
-    data = Column(JSON, default=dict)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

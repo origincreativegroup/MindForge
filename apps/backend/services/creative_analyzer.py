@@ -3,7 +3,7 @@
 import asyncio
 import json
 from typing import Dict, List, Any, Optional
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from ..models import Project as CreativeProject, ProjectInsight
 from ..schemas import ProjectType
@@ -14,11 +14,21 @@ class CreativeProjectAnalyzer(ABC):
 
     def __init__(self):
         self.analysis_cache = {}
+        self.supported_image_types = ["image/png", "image/jpeg"]
 
-    @abstractmethod
     async def analyze_project(self, project: CreativeProject) -> Dict[str, Any]:
-        """Analyze a creative project and return insights."""
-        pass
+        """Analyze a creative project and return insights.
+
+        Subclasses should override this method with real analysis logic. The
+        base implementation returns a minimal placeholder response.
+        """
+        return {
+            "overall_score": 0.0,
+            "category_scores": {},
+            "detailed_insights": [],
+            "recommendations": [],
+            "action_items": [],
+        }
 
     async def generate_insights(self, project: CreativeProject) -> List[Dict[str, Any]]:
         """Generate basic insights for a project."""

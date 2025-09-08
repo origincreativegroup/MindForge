@@ -245,6 +245,54 @@ class CaseyProjectQuestioner:
                     "context": "Understanding the project type helps provide relevant feedback",
                 }
             ],
+            ProjectType.print_design: [
+                {
+                    "question": "What is the purpose of this print design?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Helps tailor recommendations for print materials",
+                }
+            ],
+            ProjectType.illustration: [
+                {
+                    "question": "What style of illustration is desired?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Style impacts the overall mood and technique",
+                }
+            ],
+            ProjectType.photography: [
+                {
+                    "question": "What is the photography subject?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Subject matter guides composition and equipment",
+                }
+            ],
+            ProjectType.video_production: [
+                {
+                    "question": "What kind of video production is this?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Different productions have unique requirements",
+                }
+            ],
+            ProjectType.ui_ux: [
+                {
+                    "question": "What platform is the UI/UX for?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Platform affects design patterns and conventions",
+                }
+            ],
+            ProjectType.packaging: [
+                {
+                    "question": "What product is this packaging for?",
+                    "type": QuestionType.text,
+                    "priority": 1,
+                    "context": "Product details influence packaging requirements",
+                }
+            ],
         }
 
         return TemplateDict(templates)

@@ -2,12 +2,20 @@
 
 import asyncio
 import json
-import numpy as np
+from statistics import mean
 from typing import Dict, List, Any, Optional, Tuple
-from PIL import Image, ImageDraw, ImageFont
 import math
 from collections import defaultdict, Counter
 import re
+
+try:
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError:  # pragma: no cover - pillow is optional in this environment
+    class _DummyImage:
+        Image = object
+
+    Image = _DummyImage
+    ImageDraw = ImageFont = Any
 
 from ..models import Project as CreativeProject, ProjectInsight
 from ..schemas import ProjectType
@@ -67,7 +75,7 @@ class AdvancedCreativeAnalyzer(CreativeProjectAnalyzer):
 
         # Calculate overall score
         if audit_results['category_scores']:
-            audit_results['overall_score'] = np.mean(list(audit_results['category_scores'].values()))
+            audit_results['overall_score'] = mean(list(audit_results['category_scores'].values()))
 
         # Generate prioritized recommendations
         audit_results['recommendations'] = self._generate_prioritized_recommendations(
