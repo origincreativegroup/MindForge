@@ -1,17 +1,5 @@
 name: CI
+        if: matrix.app == 'frontend'
+      - name: Install dependencies
+        working-directory: ${{ env.APP_DIR }}
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: echo "dummy build log" > build.log
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log

@@ -1,0 +1,22 @@
+name: Preview
+on:
+  pull_request:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - uses: ./.github/actions/setup-python
+      - name: Build images
+        run: |
+          echo "docker build backend:${{ github.sha }}"
+          echo "docker build frontend:${{ github.sha }}"
+      - name: Push images
+        run: |
+          echo "docker push backend:${{ github.sha }}"
+          echo "docker push frontend:${{ github.sha }}"
+      - name: Deploy to preview namespace
+        run: |
+          echo "deploying PR ${{ github.event.number }} to preview namespace"
