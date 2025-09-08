@@ -96,21 +96,27 @@ def send_message_stream(
 @router.post("/conversations/{conversation_id}/upload")
 async def upload(conversation_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
     conv = db.query(models.Conversation).get(conversation_id)
-    if not conv: raise HTTPException(404, "Conversation not found")
+    if not conv:
+        raise HTTPException(404, "Conversation not found")
     content = await file.read()
-    kind, summary = parse_uploaded(file.filename, content)
-    text = f"[Uploaded {kind} {file.filename}]
-{summary}"
+    kind, summary, blob_url = parse_uploaded(file.filename, content)
+    if blob_url:
+        text = f"[Uploaded {kind} {file.filename}]({blob_url}){summary}"
+    else:
+        text = f"[Uploaded {kind} {file.filename}]{summary}"
     emo = score_emotion(text)
     um = models.Message(conversation_id=conversation_id, role="user", content=text, emotion=emo)
-    db.add(um); db.commit()
+    db.add(um)
+    db.commit()
     user_texts = [m.content for m in conv.messages if m.role == "user"] + [text]
     extraction = extract_process(user_texts)
     pm = models.ProcessMap(conversation_id=conversation_id, **extraction)
-    db.add(pm); db.commit()
-    return {"status": "ok", "kind": kind, "preview_len": len(summary)}
+    db.add(pm)
+    db.commit()
+    return {"status": "ok", "kind": kind, "preview_len": len(summary), "blob_url": blob_url}
 
 @router.get("/conversations/{conversation_id}/mirror")
+
 def mirror(conversation_id: int, db: Session = Depends(get_db)):
     conv = db.query(models.Conversation).get(conversation_id)
     if not conv: raise HTTPException(404, "Conversation not found")

@@ -11,16 +11,19 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import Generator
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
-# SQLite database stored in the repository root.  ``check_same_thread`` is
-# required for SQLite when using the connection in different threads (e.g. the
-# test runner).
-DATABASE_URL = "sqlite:///./mindforge.db"
+# Use a Postgres connection when available, falling back to a local SQLite
+# database for tests and development.
+DATABASE_URL = (
+    os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or "sqlite:///./mindforge.db"
+)
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 # Base class for ORM models
