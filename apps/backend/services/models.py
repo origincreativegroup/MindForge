@@ -477,8 +477,7 @@ class ProjectComment(Base):
     project = relationship("CreativeProject", back_populates="comments")
     user = relationship("User", back_populates="comments")
     resolved_by = relationship("User", foreign_keys=[resolved_by_id])
-    parent_comment = relationship("ProjectComment", remote_side=[id])
-    replies = relationship("ProjectComment", back_populates="parent_comment")
+    parent_comment = relationship("ProjectComment", remote_side=[id], backref="replies")
 
 
 class ProjectQuestion(Base):
